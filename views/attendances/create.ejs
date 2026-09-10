@@ -1,0 +1,91 @@
+<div class="form-page">
+  <div class="form-page-header">
+    <a href="/attendances" class="btn btn-secondary btn-sm">
+      <i data-lucide="arrow-left"></i>
+      Kembali
+    </a>
+  </div>
+
+  <div class="card form-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="plus-circle"></i>
+        Tambah Data Absensi
+      </h2>
+    </div>
+    <div class="card-body">
+      <form action="/attendances" method="POST" id="attendanceForm" novalidate>
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label for="employee_id">Karyawan <span class="required">*</span></label>
+            <select id="employee_id" name="employee_id" class="form-control" required>
+              <option value="">-- Pilih Karyawan --</option>
+              <% employees.forEach(function(emp) { %>
+                <option value="<%= emp.id %>"
+                  <%= (typeof old !== 'undefined' && old.employee_id == emp.id) ? 'selected' : '' %>>
+                  [<%= emp.employee_code %>] <%= emp.name %> — <%= emp.department %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="date">Tanggal <span class="required">*</span></label>
+            <input type="date" id="date" name="date" class="form-control"
+              value="<%= typeof old !== 'undefined' && old.date ? old.date : new Date().toISOString().split('T')[0] %>"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status Absensi <span class="required">*</span></label>
+            <select id="status" name="status" class="form-control" required>
+              <option value="">-- Pilih Status --</option>
+              <option value="Hadir" <%= (typeof old !== 'undefined' && old.status === 'Hadir') ? 'selected' : '' %>>✅ Hadir</option>
+              <option value="Izin" <%= (typeof old !== 'undefined' && old.status === 'Izin') ? 'selected' : '' %>>🕐 Izin</option>
+              <option value="Alpa" <%= (typeof old !== 'undefined' && old.status === 'Alpa') ? 'selected' : '' %>>❌ Alpa</option>
+            </select>
+          </div>
+
+          <div class="form-group form-full" id="descriptionGroup" style="display:none;">
+            <label for="description">
+              Keterangan <span class="required" id="descRequired">*</span>
+              <span class="form-hint">(Wajib diisi untuk status Izin)</span>
+            </label>
+            <textarea id="description" name="description" class="form-control" rows="3"
+              placeholder="Tuliskan alasan izin (misal: Sakit, Urusan Keluarga, dll)"><%= typeof old !== 'undefined' && old.description ? old.description : '' %></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="/attendances" class="btn btn-secondary">Batal</a>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="save"></i>
+            Simpan Absensi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Show/hide description based on status
+  const statusSelect = document.getElementById('status');
+  const descGroup = document.getElementById('descriptionGroup');
+  const descInput = document.getElementById('description');
+
+  function toggleDescription() {
+    if (statusSelect.value === 'Izin') {
+      descGroup.style.display = 'block';
+      descInput.required = true;
+    } else {
+      descGroup.style.display = 'none';
+      descInput.required = false;
+    }
+  }
+
+  statusSelect.addEventListener('change', toggleDescription);
+  
+  // Check on load (for old values)
+  toggleDescription();
+</script>

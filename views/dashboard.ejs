@@ -1,0 +1,134 @@
+<div class="dashboard-page">
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card stat-primary">
+      <div class="stat-icon">
+        <i data-lucide="users"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value"><%= totalEmployees %></span>
+        <span class="stat-label">Total Karyawan Aktif</span>
+      </div>
+      <div class="stat-decoration"></div>
+    </div>
+
+    <div class="stat-card stat-success">
+      <div class="stat-icon">
+        <i data-lucide="user-check"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value"><%= todayStats.Hadir %></span>
+        <span class="stat-label">Hadir Hari Ini</span>
+      </div>
+      <div class="stat-decoration"></div>
+    </div>
+
+    <div class="stat-card stat-warning">
+      <div class="stat-icon">
+        <i data-lucide="user-minus"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value"><%= todayStats.Izin %></span>
+        <span class="stat-label">Izin Hari Ini</span>
+      </div>
+      <div class="stat-decoration"></div>
+    </div>
+
+    <div class="stat-card stat-danger">
+      <div class="stat-icon">
+        <i data-lucide="user-x"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value"><%= todayStats.Alpa %></span>
+        <span class="stat-label">Alpa Hari Ini</span>
+      </div>
+      <div class="stat-decoration"></div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <a href="/attendances/create" class="quick-action-btn">
+      <i data-lucide="plus-circle"></i>
+      <span>Tambah Absensi</span>
+    </a>
+    <a href="/employees/create" class="quick-action-btn">
+      <i data-lucide="user-plus"></i>
+      <span>Tambah Karyawan</span>
+    </a>
+    <a href="/recap" class="quick-action-btn">
+      <i data-lucide="file-bar-chart"></i>
+      <span>Lihat Rekap</span>
+    </a>
+    <a href="/attendances" class="quick-action-btn">
+      <i data-lucide="clipboard-list"></i>
+      <span>Semua Absensi</span>
+    </a>
+  </div>
+
+  <!-- Recent Attendance Table -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="clock"></i>
+        Absensi Terbaru
+      </h2>
+      <a href="/attendances" class="btn btn-sm btn-outline">
+        Lihat Semua
+        <i data-lucide="arrow-right"></i>
+      </a>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Karyawan</th>
+              <th>NIK</th>
+              <th>Departemen</th>
+              <th>Tanggal</th>
+              <th>Status</th>
+              <th>Keterangan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (recentAttendances.length === 0) { %>
+              <tr>
+                <td colspan="7" class="text-center text-muted">
+                  <div class="empty-state">
+                    <i data-lucide="inbox"></i>
+                    <p>Belum ada data absensi</p>
+                  </div>
+                </td>
+              </tr>
+            <% } else { %>
+              <% recentAttendances.forEach(function(a, i) { %>
+                <tr>
+                  <td><%= i + 1 %></td>
+                  <td>
+                    <div class="employee-name-cell">
+                      <div class="employee-avatar"><%= a.employee_name.charAt(0).toUpperCase() %></div>
+                      <strong><%= a.employee_name %></strong>
+                    </div>
+                  </td>
+                  <td><code class="code-text"><%= a.employee_code %></code></td>
+                  <td><span class="dept-badge"><%= a.department %></span></td>
+                  <td>
+                    <%= new Date(a.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                  </td>
+                  <td>
+                    <span class="badge badge-<%= a.status === 'Hadir' ? 'success' : a.status === 'Izin' ? 'warning' : 'danger' %>">
+                      <%= a.status %>
+                    </span>
+                  </td>
+                  <td><%= a.description || '-' %></td>
+                </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

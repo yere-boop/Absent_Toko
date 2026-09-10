@@ -1,0 +1,88 @@
+<div class="form-page">
+  <div class="form-page-header">
+    <a href="/attendances" class="btn btn-secondary btn-sm">
+      <i data-lucide="arrow-left"></i>
+      Kembali
+    </a>
+  </div>
+
+  <div class="card form-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="edit"></i>
+        Edit Data Absensi
+      </h2>
+    </div>
+    <div class="card-body">
+      <form action="/attendances/<%= attendance.id %>?_method=PUT" method="POST" id="attendanceEditForm" novalidate>
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label for="employee_id">Karyawan <span class="required">*</span></label>
+            <select id="employee_id" name="employee_id" class="form-control" required>
+              <option value="">-- Pilih Karyawan --</option>
+              <% employees.forEach(function(emp) { %>
+                <option value="<%= emp.id %>" <%= attendance.employee_id == emp.id ? 'selected' : '' %>>
+                  [<%= emp.employee_code %>] <%= emp.name %> — <%= emp.department %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="date">Tanggal <span class="required">*</span></label>
+            <input type="date" id="date" name="date" class="form-control"
+              value="<%= attendance.date %>" required>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status Absensi <span class="required">*</span></label>
+            <select id="status" name="status" class="form-control" required>
+              <option value="">-- Pilih Status --</option>
+              <option value="Hadir" <%= attendance.status === 'Hadir' ? 'selected' : '' %>>✅ Hadir</option>
+              <option value="Izin" <%= attendance.status === 'Izin' ? 'selected' : '' %>>🕐 Izin</option>
+              <option value="Alpa" <%= attendance.status === 'Alpa' ? 'selected' : '' %>>❌ Alpa</option>
+            </select>
+          </div>
+
+          <div class="form-group form-full" id="descriptionGroup">
+            <label for="description">
+              Keterangan
+              <span class="required" id="descRequired" style="display:none;">*</span>
+              <span class="form-hint">(Wajib diisi untuk status Izin)</span>
+            </label>
+            <textarea id="description" name="description" class="form-control" rows="3"
+              placeholder="Tuliskan keterangan jika diperlukan"><%= attendance.description || '' %></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="/attendances" class="btn btn-secondary">Batal</a>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="save"></i>
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const statusSelect = document.getElementById('status');
+  const descGroup = document.getElementById('descriptionGroup');
+  const descInput = document.getElementById('description');
+  const descRequired = document.getElementById('descRequired');
+
+  function toggleDescription() {
+    if (statusSelect.value === 'Izin') {
+      descRequired.style.display = 'inline';
+      descInput.required = true;
+    } else {
+      descRequired.style.display = 'none';
+      descInput.required = false;
+    }
+  }
+
+  statusSelect.addEventListener('change', toggleDescription);
+  toggleDescription();
+</script>

@@ -1,0 +1,67 @@
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="logo-text">
+        <h2>AbsensiPro</h2>
+        <span>Manajemen Kantor</span>
+      </div>
+    </div>
+    <button class="sidebar-close" id="sidebarClose">
+      <i data-lucide="x"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <span class="nav-section-title">Menu Utama</span>
+      
+      <a href="/dashboard" class="nav-link <%= active === 'dashboard' ? 'active' : '' %>">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="/employees" class="nav-link <%= active === 'employees' ? 'active' : '' %>">
+        <i data-lucide="users"></i>
+        <span>Data Karyawan</span>
+      </a>
+
+      <a href="/attendances" class="nav-link <%= active === 'attendances' ? 'active' : '' %>">
+        <i data-lucide="clipboard-list"></i>
+        <span>Absensi</span>
+      </a>
+
+      <a href="/recap" class="nav-link <%= active === 'recap' ? 'active' : '' %>">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Rekap Absensi</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-section-title">Akun</span>
+      
+      <form action="/logout" method="POST" class="nav-logout-form">
+        <button type="submit" class="nav-link nav-logout">
+          <i data-lucide="log-out"></i>
+          <span>Logout</span>
+        </button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        <i data-lucide="user-circle"></i>
+      </div>
+      <div class="user-info">
+        <span class="user-name"><%= user ? user.username : 'Admin' %></span>
+        <span class="user-role">Administrator</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

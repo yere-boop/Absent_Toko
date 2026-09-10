@@ -1,0 +1,103 @@
+<div class="detail-page">
+  <div class="form-page-header">
+    <div style="display:flex; gap:0.5rem;">
+      <a href="/attendances" class="btn btn-secondary btn-sm">
+        <i data-lucide="arrow-left"></i>
+        Kembali
+      </a>
+      <a href="/attendances/<%= attendance.id %>/edit" class="btn btn-warning btn-sm">
+        <i data-lucide="edit-2"></i>
+        Edit
+      </a>
+      <button class="btn btn-danger btn-sm"
+        onclick="confirmDelete('/attendances/<%= attendance.id %>', 'Hapus data absensi ini?')">
+        <i data-lucide="trash-2"></i>
+        Hapus
+      </button>
+    </div>
+  </div>
+
+  <div class="card detail-card-single">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="clipboard-list"></i>
+        Detail Absensi
+      </h2>
+      <span class="badge badge-<%= attendance.status === 'Hadir' ? 'success' : attendance.status === 'Izin' ? 'warning' : 'danger' %> badge-lg">
+        <%= attendance.status %>
+      </span>
+    </div>
+    <div class="card-body">
+      <div class="detail-grid-simple">
+        <div class="detail-row">
+          <div class="detail-label">
+            <i data-lucide="user"></i>
+            Nama Karyawan
+          </div>
+          <div class="detail-value"><strong><%= attendance.employee_name %></strong></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">
+            <i data-lucide="hash"></i>
+            NIK / Kode Karyawan
+          </div>
+          <div class="detail-value"><code class="code-text"><%= attendance.employee_code %></code></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">
+            <i data-lucide="briefcase"></i>
+            Jabatan
+          </div>
+          <div class="detail-value"><%= attendance.position %></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">
+            <i data-lucide="building"></i>
+            Departemen
+          </div>
+          <div class="detail-value"><span class="dept-badge"><%= attendance.department %></span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">
+            <i data-lucide="calendar"></i>
+            Tanggal Absensi
+          </div>
+          <div class="detail-value">
+            <strong>
+              <%= new Date(attendance.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %>
+            </strong>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">
+            <i data-lucide="activity"></i>
+            Status
+          </div>
+          <div class="detail-value">
+            <span class="badge badge-<%= attendance.status === 'Hadir' ? 'success' : attendance.status === 'Izin' ? 'warning' : 'danger' %> badge-lg">
+              <%= attendance.status %>
+            </span>
+          </div>
+        </div>
+        <% if (attendance.description) { %>
+          <div class="detail-row">
+            <div class="detail-label">
+              <i data-lucide="message-square"></i>
+              Keterangan
+            </div>
+            <div class="detail-value"><%= attendance.description %></div>
+          </div>
+        <% } %>
+        <div class="detail-row">
+          <div class="detail-label">
+            <i data-lucide="clock"></i>
+            Dicatat Pada
+          </div>
+          <div class="detail-value text-muted">
+            <%= new Date(attendance.created_at).toLocaleString('id-ID') %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

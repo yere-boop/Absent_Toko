@@ -1,0 +1,121 @@
+<div class="detail-page">
+  <div class="form-page-header">
+    <div style="display:flex; gap:0.5rem;">
+      <a href="/employees" class="btn btn-secondary btn-sm">
+        <i data-lucide="arrow-left"></i>
+        Kembali
+      </a>
+      <a href="/employees/<%= employee.id %>/edit" class="btn btn-warning btn-sm">
+        <i data-lucide="edit-2"></i>
+        Edit
+      </a>
+      <button class="btn btn-danger btn-sm"
+        onclick="confirmDelete('/employees/<%= employee.id %>', 'Hapus karyawan &quot;<%= employee.name %>&quot;? Semua data absensi juga akan terhapus.')">
+        <i data-lucide="trash-2"></i>
+        Hapus
+      </button>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <!-- Profile Card -->
+    <div class="card profile-card">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <%= employee.name.charAt(0).toUpperCase() %>
+        </div>
+        <h2 class="profile-name"><%= employee.name %></h2>
+        <p class="profile-position"><%= employee.position %></p>
+        <span class="badge <%= employee.status === 'Aktif' ? 'badge-success' : 'badge-secondary' %>">
+          <%= employee.status %>
+        </span>
+      </div>
+      <div class="profile-details">
+        <div class="profile-detail-item">
+          <i data-lucide="hash"></i>
+          <div>
+            <span class="detail-label">NIK</span>
+            <span class="detail-value"><code class="code-text"><%= employee.employee_code %></code></span>
+          </div>
+        </div>
+        <div class="profile-detail-item">
+          <i data-lucide="briefcase"></i>
+          <div>
+            <span class="detail-label">Departemen</span>
+            <span class="detail-value"><%= employee.department %></span>
+          </div>
+        </div>
+        <div class="profile-detail-item">
+          <i data-lucide="phone"></i>
+          <div>
+            <span class="detail-label">Telepon</span>
+            <span class="detail-value"><%= employee.phone || '-' %></span>
+          </div>
+        </div>
+        <div class="profile-detail-item">
+          <i data-lucide="map-pin"></i>
+          <div>
+            <span class="detail-label">Alamat</span>
+            <span class="detail-value"><%= employee.address || '-' %></span>
+          </div>
+        </div>
+        <div class="profile-detail-item">
+          <i data-lucide="calendar"></i>
+          <div>
+            <span class="detail-label">Bergabung</span>
+            <span class="detail-value">
+              <%= new Date(employee.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance History -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i data-lucide="clipboard-list"></i>
+          Riwayat Absensi
+        </h2>
+        <a href="/attendances?search=<%= employee.name %>" class="btn btn-sm btn-outline">
+          Lihat Semua
+          <i data-lucide="arrow-right"></i>
+        </a>
+      </div>
+      <div class="card-body">
+        <% if (attendances.length === 0) { %>
+          <div class="empty-state">
+            <i data-lucide="inbox"></i>
+            <p>Belum ada data absensi untuk karyawan ini</p>
+          </div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Status</th>
+                  <th>Keterangan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% attendances.forEach(function(a) { %>
+                  <tr>
+                    <td><%= new Date(a.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                    <td>
+                      <span class="badge badge-<%= a.status === 'Hadir' ? 'success' : a.status === 'Izin' ? 'warning' : 'danger' %>">
+                        <%= a.status %>
+                      </span>
+                    </td>
+                    <td><%= a.description || '-' %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — Sistem Absensi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-container">
+    <%- include('../partials/sidebar') %>
+    
+    <div class="main-wrapper">
+      <%- include('../partials/navbar') %>
+      
+      <main class="main-content">
+        <!-- Flash Messages -->
+        <% if (locals.success && success.length > 0) { %>
+          <div class="alert alert-success" id="flash-success">
+            <i data-lucide="check-circle"></i>
+            <span><%= Array.isArray(success) ? success[0] : success %></span>
+            <button class="alert-close" onclick="this.parentElement.remove()">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        <% } %>
+        
+        <% if (locals.error && error.length > 0) { %>
+          <div class="alert alert-error" id="flash-error">
+            <i data-lucide="alert-circle"></i>
+            <div class="alert-content">
+              <% if (Array.isArray(error)) { %>
+                <% error.forEach(function(e) { %><span class="alert-line"><%= e %></span><% }); %>
+              <% } else { %>
+                <span><%= error %></span>
+              <% } %>
+            </div>
+            <button class="alert-close" onclick="this.parentElement.remove()">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        <% } %>
+
+        <%- body %>
+      </main>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+      <div class="modal-icon danger">
+        <i data-lucide="alert-triangle"></i>
+      </div>
+      <h3>Konfirmasi Hapus</h3>
+      <p id="deleteMessage">Apakah Anda yakin ingin menghapus data ini?</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Batal</button>
+        <form id="deleteForm" method="POST" style="display:inline">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger">
+            <i data-lucide="trash-2"></i>
+            Hapus
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav-items">
+      <a href="/dashboard" class="bottom-nav-item <%= active === 'dashboard' ? 'active' : '' %>">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/employees" class="bottom-nav-item <%= active === 'employees' ? 'active' : '' %>">
+        <i data-lucide="users"></i>
+        <span>Karyawan</span>
+      </a>
+      <a href="/attendances" class="bottom-nav-item <%= active === 'attendances' ? 'active' : '' %>">
+        <i data-lucide="clipboard-list"></i>
+        <span>Absensi</span>
+      </a>
+      <a href="/recap" class="bottom-nav-item <%= active === 'recap' ? 'active' : '' %>">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Rekap</span>
+      </a>
+      <form action="/logout" method="POST" class="bottom-nav-form">
+        <button type="submit" class="bottom-nav-item">
+          <i data-lucide="log-out"></i>
+          <span>Logout</span>
+        </button>
+      </form>
+    </div>
+  </nav>
+
+  <script src="/js/app.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

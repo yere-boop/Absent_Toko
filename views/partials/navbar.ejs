@@ -1,0 +1,29 @@
+<header class="navbar">
+  <div class="navbar-left">
+    <button class="hamburger" id="hamburgerBtn">
+      <i data-lucide="menu"></i>
+    </button>
+    <div class="page-info">
+      <h1 class="page-title"><%= title %></h1>
+      <p class="page-breadcrumb">
+        <a href="/dashboard">Home</a>
+        <% if (active !== 'dashboard') { %>
+          <i data-lucide="chevron-right"></i>
+          <span><%= title %></span>
+        <% } %>
+      </p>
+    </div>
+  </div>
+  <div class="navbar-right">
+    <div class="navbar-date">
+      <i data-lucide="calendar"></i>
+      <span id="currentDate"></span>
+    </div>
+    <div class="navbar-user-badge">
+      <div class="user-badge-avatar">
+        <i data-lucide="user"></i>
+      </div>
+      <span><%= user ? user.username : 'Admin' %></span>
+    </div>
+  </div>
+</header>

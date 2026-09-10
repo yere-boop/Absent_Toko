@@ -1,0 +1,171 @@
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <i data-lucide="bar-chart-3"></i>
+      Rekap Absensi Karyawan
+    </h2>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <form action="/recap" method="GET" class="filter-form">
+      <div class="filter-group filter-group-wrap">
+        <select name="month" class="form-control">
+          <% months.forEach(function(m) { %>
+            <option value="<%= m.value %>" <%= filters.month == m.value ? 'selected' : '' %>><%= m.label %></option>
+          <% }); %>
+        </select>
+        <select name="year" class="form-control">
+          <% years.forEach(function(y) { %>
+            <option value="<%= y %>" <%= filters.year == y ? 'selected' : '' %>><%= y %></option>
+          <% }); %>
+        </select>
+        <select name="department" class="form-control">
+          <option value="">Semua Departemen</option>
+          <% departments.forEach(function(d) { %>
+            <option value="<%= d %>" <%= filters.department === d ? 'selected' : '' %>><%= d %></option>
+          <% }); %>
+        </select>
+        <select name="employee_id" class="form-control">
+          <option value="">Semua Karyawan</option>
+          <% employees.forEach(function(emp) { %>
+            <option value="<%= emp.id %>" <%= filters.employee_id == emp.id ? 'selected' : '' %>>
+              <%= emp.name %>
+            </option>
+          <% }); %>
+        </select>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="filter"></i>
+          Tampilkan
+        </button>
+        <a href="/recap" class="btn btn-secondary">
+          <i data-lucide="refresh-cw"></i>
+          Reset
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="recap-summary">
+    <div class="recap-stat recap-hadir">
+      <i data-lucide="user-check"></i>
+      <div>
+        <span class="recap-stat-value"><%= totals.hadir %></span>
+        <span class="recap-stat-label">Total Hadir</span>
+      </div>
+    </div>
+    <div class="recap-stat recap-izin">
+      <i data-lucide="user-minus"></i>
+      <div>
+        <span class="recap-stat-value"><%= totals.izin %></span>
+        <span class="recap-stat-label">Total Izin</span>
+      </div>
+    </div>
+    <div class="recap-stat recap-alpa">
+      <i data-lucide="user-x"></i>
+      <div>
+        <span class="recap-stat-value"><%= totals.alpa %></span>
+        <span class="recap-stat-label">Total Alpa</span>
+      </div>
+    </div>
+    <div class="recap-stat recap-total">
+      <i data-lucide="calendar-range"></i>
+      <div>
+        <span class="recap-stat-value"><%= totals.total %></span>
+        <span class="recap-stat-label">Total Keseluruhan</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Karyawan</th>
+            <th>NIK</th>
+            <th>Departemen</th>
+            <th class="text-center">
+              <span class="badge badge-success">Hadir</span>
+            </th>
+            <th class="text-center">
+              <span class="badge badge-warning">Izin</span>
+            </th>
+            <th class="text-center">
+              <span class="badge badge-danger">Alpa</span>
+            </th>
+            <th class="text-center">Total</th>
+            <th class="text-center">Kehadiran</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (recap.length === 0) { %>
+            <tr>
+              <td colspan="9" class="text-center text-muted">
+                <div class="empty-state">
+                  <i data-lucide="bar-chart-3"></i>
+                  <p>Tidak ada data rekap untuk periode ini</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% recap.forEach(function(r, i) { %>
+              <% const pct = r.total > 0 ? Math.round((r.hadir / r.total) * 100) : 0; %>
+              <tr>
+                <td><%= i + 1 %></td>
+                <td>
+                  <div class="employee-name-cell">
+                    <div class="employee-avatar"><%= r.name.charAt(0).toUpperCase() %></div>
+                    <strong><%= r.name %></strong>
+                  </div>
+                </td>
+                <td><code class="code-text"><%= r.employee_code %></code></td>
+                <td><span class="dept-badge"><%= r.department %></span></td>
+                <td class="text-center">
+                  <strong class="text-success"><%= r.hadir %></strong>
+                </td>
+                <td class="text-center">
+                  <strong class="text-warning"><%= r.izin %></strong>
+                </td>
+                <td class="text-center">
+                  <strong class="text-danger"><%= r.alpa %></strong>
+                </td>
+                <td class="text-center">
+                  <strong><%= r.total %></strong>
+                </td>
+                <td class="text-center">
+                  <div class="progress-cell">
+                    <div class="progress-bar-wrap">
+                      <div class="progress-bar-fill" style="width: <%= pct %>%;"
+                        data-color="<%= pct >= 80 ? 'success' : pct >= 60 ? 'warning' : 'danger' %>"></div>
+                    </div>
+                    <span class="progress-pct <%= pct >= 80 ? 'text-success' : pct >= 60 ? 'text-warning' : 'text-danger' %>">
+                      <%= pct %>%
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+        <% if (recap.length > 0) { %>
+          <tfoot>
+            <tr class="table-footer">
+              <td colspan="4"><strong>TOTAL</strong></td>
+              <td class="text-center"><strong class="text-success"><%= totals.hadir %></strong></td>
+              <td class="text-center"><strong class="text-warning"><%= totals.izin %></strong></td>
+              <td class="text-center"><strong class="text-danger"><%= totals.alpa %></strong></td>
+              <td class="text-center"><strong><%= totals.total %></strong></td>
+              <td class="text-center">
+                <% const overallPct = totals.total > 0 ? Math.round((totals.hadir / totals.total) * 100) : 0; %>
+                <strong><%= overallPct %>%</strong>
+              </td>
+            </tr>
+          </tfoot>
+        <% } %>
+      </table>
+    </div>
+  </div>
+</div>

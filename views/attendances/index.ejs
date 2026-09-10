@@ -1,0 +1,122 @@
+<div class="page-actions">
+  <a href="/attendances/create" class="btn btn-primary">
+    <i data-lucide="plus-circle"></i>
+    Tambah Absensi
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <i data-lucide="clipboard-list"></i>
+      Data Absensi
+    </h2>
+    <span class="badge-count"><%= attendances.length %> data</span>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <form action="/attendances" method="GET" class="filter-form">
+      <div class="filter-group filter-group-wrap">
+        <div class="search-box">
+          <i data-lucide="search"></i>
+          <input type="text" name="search" placeholder="Cari nama karyawan..." value="<%= filters.search %>" class="form-control">
+        </div>
+        <input type="date" name="dateFrom" value="<%= filters.dateFrom %>" class="form-control" title="Dari Tanggal">
+        <input type="date" name="dateTo" value="<%= filters.dateTo %>" class="form-control" title="Sampai Tanggal">
+        <select name="status" class="form-control">
+          <option value="">Semua Status</option>
+          <option value="Hadir" <%= filters.status === 'Hadir' ? 'selected' : '' %>>Hadir</option>
+          <option value="Izin" <%= filters.status === 'Izin' ? 'selected' : '' %>>Izin</option>
+          <option value="Alpa" <%= filters.status === 'Alpa' ? 'selected' : '' %>>Alpa</option>
+        </select>
+        <select name="department" class="form-control">
+          <option value="">Semua Departemen</option>
+          <% departments.forEach(function(d) { %>
+            <option value="<%= d %>" <%= filters.department === d ? 'selected' : '' %>><%= d %></option>
+          <% }); %>
+        </select>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="filter"></i>
+          Filter
+        </button>
+        <a href="/attendances" class="btn btn-secondary">
+          <i data-lucide="refresh-cw"></i>
+          Reset
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Karyawan</th>
+            <th>Departemen</th>
+            <th>Tanggal</th>
+            <th>Status</th>
+            <th>Keterangan</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (attendances.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center text-muted">
+                <div class="empty-state">
+                  <i data-lucide="clipboard"></i>
+                  <p>Tidak ada data absensi ditemukan</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% attendances.forEach(function(a, i) { %>
+              <tr>
+                <td><%= i + 1 %></td>
+                <td>
+                  <div class="employee-name-cell">
+                    <div class="employee-avatar"><%= a.employee_name.charAt(0).toUpperCase() %></div>
+                    <div>
+                      <strong><%= a.employee_name %></strong>
+                      <small class="text-muted d-block"><%= a.employee_code %></small>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="dept-badge"><%= a.department %></span></td>
+                <td>
+                  <%= new Date(a.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) %>
+                </td>
+                <td>
+                  <span class="badge badge-<%= a.status === 'Hadir' ? 'success' : a.status === 'Izin' ? 'warning' : 'danger' %>">
+                    <% if (a.status === 'Hadir') { %><i data-lucide="check"></i><% } %>
+                    <% if (a.status === 'Izin') { %><i data-lucide="clock"></i><% } %>
+                    <% if (a.status === 'Alpa') { %><i data-lucide="x"></i><% } %>
+                    <%= a.status %>
+                  </span>
+                </td>
+                <td class="text-muted"><%= a.description || '-' %></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/attendances/<%= a.id %>" class="btn btn-xs btn-info" title="Detail">
+                      <i data-lucide="eye"></i>
+                    </a>
+                    <a href="/attendances/<%= a.id %>/edit" class="btn btn-xs btn-warning" title="Edit">
+                      <i data-lucide="edit-2"></i>
+                    </a>
+                    <button class="btn btn-xs btn-danger" title="Hapus"
+                      onclick="confirmDelete('/attendances/<%= a.id %>', 'Hapus data absensi <%= a.employee_name %> pada tanggal <%= new Date(a.date + "T00:00:00").toLocaleDateString("id-ID") %>?')">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

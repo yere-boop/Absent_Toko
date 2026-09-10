@@ -1,0 +1,114 @@
+<div class="page-actions">
+  <a href="/employees/create" class="btn btn-primary">
+    <i data-lucide="user-plus"></i>
+    Tambah Karyawan
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <i data-lucide="users"></i>
+      Daftar Karyawan
+    </h2>
+    <span class="badge-count"><%= employees.length %> karyawan</span>
+  </div>
+
+  <div class="filter-bar">
+    <form action="/employees" method="GET" class="filter-form">
+      <div class="filter-group">
+        <div class="search-box" style="flex:2; min-width:220px;">
+          <i data-lucide="search"></i>
+          <input type="text" name="search" placeholder="Cari nama atau NIK..." value="<%= filters.search %>" class="form-control">
+        </div>
+        <select name="department" class="form-control" style="flex:1; min-width:150px;">
+          <option value="">Semua Departemen</option>
+          <% departments.forEach(function(d) { %>
+            <option value="<%= d %>" <%= filters.department === d ? 'selected' : '' %>><%= d %></option>
+          <% }); %>
+        </select>
+        <select name="status" class="form-control" style="flex:1; min-width:140px;">
+          <option value="">Semua Status</option>
+          <option value="Aktif" <%= filters.status === 'Aktif' ? 'selected' : '' %>>Aktif</option>
+          <option value="Tidak Aktif" <%= filters.status === 'Tidak Aktif' ? 'selected' : '' %>>Tidak Aktif</option>
+        </select>
+        <div style="display:flex; gap:0.5rem; flex-shrink:0;">
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="filter"></i>
+            Filter
+          </button>
+          <a href="/employees" class="btn btn-secondary">
+            <i data-lucide="refresh-cw"></i>
+            Reset
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>NIK</th>
+            <th>Nama Lengkap</th>
+            <th>Jabatan</th>
+            <th>Departemen</th>
+            <th>Telepon</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (employees.length === 0) { %>
+            <tr>
+              <td colspan="8" class="text-center text-muted">
+                <div class="empty-state">
+                  <i data-lucide="users"></i>
+                  <p>Tidak ada data karyawan ditemukan</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% employees.forEach(function(emp, i) { %>
+              <tr>
+                <td><%= i + 1 %></td>
+                <td><code class="code-text"><%= emp.employee_code %></code></td>
+                <td>
+                  <div class="employee-name-cell">
+                    <div class="employee-avatar"><%= emp.name.charAt(0).toUpperCase() %></div>
+                    <strong><%= emp.name %></strong>
+                  </div>
+                </td>
+                <td><%= emp.position %></td>
+                <td><span class="dept-badge"><%= emp.department %></span></td>
+                <td><%= emp.phone || '-' %></td>
+                <td>
+                  <span class="badge <%= emp.status === 'Aktif' ? 'badge-success' : 'badge-secondary' %>">
+                    <%= emp.status %>
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/employees/<%= emp.id %>" class="btn btn-xs btn-info" title="Detail">
+                      <i data-lucide="eye"></i>
+                    </a>
+                    <a href="/employees/<%= emp.id %>/edit" class="btn btn-xs btn-warning" title="Edit">
+                      <i data-lucide="edit-2"></i>
+                    </a>
+                    <button class="btn btn-xs btn-danger" title="Hapus"
+                      onclick="confirmDelete('/employees/<%= emp.id %>', 'Hapus karyawan &quot;<%= emp.name %>&quot;? Semua data absensi terkait juga akan ikut terhapus.')">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
