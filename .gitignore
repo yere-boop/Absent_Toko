@@ -4,6 +4,8 @@ node_modules/
 # Database (generated locally)
 database.sqlite
 *.sqlite
+*.sqlite-shm
+*.sqlite-wal
 *.db
 
 # Environment variables
