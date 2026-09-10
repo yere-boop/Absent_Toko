@@ -1,7 +1,15 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.join(__dirname, '..', 'database.sqlite');
+// On Vercel/serverless: use /tmp (writable). Locally: use project root.
+const isProd = process.env.NODE_ENV === 'production';
+const dbDir = isProd ? '/tmp' : path.join(__dirname, '..');
+const dbPath = path.join(dbDir, 'database.sqlite');
+
+// Ensure directory exists
+if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+
 const db = new Database(dbPath);
 
 // Enable WAL mode for better performance
