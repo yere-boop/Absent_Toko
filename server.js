@@ -9,6 +9,14 @@ const path = require('path');
 // Initialize database (creates tables if not exist)
 require('./config/database');
 
+// Auto-seed admin if not exists (for first deployment)
+const User = require('./models/User');
+const existingAdmin = User.findByUsername('admin');
+if (!existingAdmin) {
+  User.create({ username: 'admin', email: 'admin@kantor.com', password: 'admin123' });
+  console.log('✅ Admin user created automatically.');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
