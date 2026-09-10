@@ -190,11 +190,14 @@ a { text-decoration: none; color: inherit; }
   justify-content: center;
   padding: 2rem;
   background: var(--surface);
+  overflow-y: auto;
+  min-height: 100vh;
 }
 
 .login-form-wrapper {
   width: 100%;
   max-width: 420px;
+  padding: 1rem 0;
 }
 
 .login-logo-mobile {
@@ -996,7 +999,22 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 }
 
 /* ─── Table ─── */
-.table-responsive { overflow-x: auto; }
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile-hidden columns */
+@media (max-width: 768px) {
+  .col-hide-mobile { display: none !important; }
+  .col-show-mobile { display: block !important; }
+}
+@media (min-width: 769px) {
+  .col-hide-desktop { display: none !important; }
+}
+@media (max-width: 480px) {
+  .col-hide-xs { display: none !important; }
+}
 
 .table {
   width: 100%;
@@ -1440,10 +1458,12 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 }
 
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .recap-summary { grid-template-columns: 1fr; }
-  .main-content { padding: 1rem; }
+  .main-content { padding: 0.75rem; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
   .filter-group { flex-direction: column; align-items: stretch; }
+  /* Login */
+  .login-right { padding: 1rem; align-items: flex-start; padding-top: 2rem; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1540,7 +1560,7 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 
   /* Add padding to main content so bottom nav doesn't overlap */
   .main-content {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* Compact navbar */
@@ -1604,11 +1624,16 @@ textarea.form-control { resize: vertical; min-height: 80px; }
   }
 
   .card-title { font-size: 0.9375rem; }
-  .card-body { padding: 0.75rem 1rem; }
 
-  /* Tables */
-  .table th { font-size: 0.6875rem; padding: 0.625rem 0.75rem; }
-  .table td { padding: 0.75rem; font-size: 0.8125rem; }
+  /* Tables — stretch edge to edge inside card on mobile */
+  .card-body:has(.table-responsive) { padding: 0 !important; }
+  .table-responsive { border-radius: 0; }
+  .table th { font-size: 0.6875rem; padding: 0.625rem 0.625rem; white-space: nowrap; }
+  .table td { padding: 0.625rem; font-size: 0.8125rem; }
+
+  /* Form cards keep padding */
+  .form-card .card-body { padding: 1rem 1rem !important; }
+  .detail-card-single .card-body { padding: 1rem 1rem !important; }
 
   /* Employee name cell compact */
   .employee-name-cell { gap: 0.5rem; }
@@ -1619,8 +1644,8 @@ textarea.form-control { resize: vertical; min-height: 80px; }
   }
 
   /* Action buttons compact */
-  .action-buttons { gap: 0.25rem; }
-  .btn-xs { padding: 0.3rem 0.4rem; }
+  .action-buttons { gap: 0.25rem; flex-wrap: nowrap; }
+  .btn-xs { padding: 0.3rem 0.4rem; min-width: 30px; min-height: 30px; justify-content: center; }
 
   /* Filter bar */
   .filter-bar {
@@ -1678,7 +1703,7 @@ textarea.form-control { resize: vertical; min-height: 80px; }
   .recap-stat-value { font-size: 1.25rem; }
 
   /* Progress cell compact */
-  .progress-cell { gap: 0.375rem; min-width: 80px; }
+  .progress-cell { gap: 0.375rem; min-width: 70px; }
 
   /* Modal */
   .modal { padding: 1.5rem 1.25rem; max-width: calc(100% - 2rem); }
@@ -1687,11 +1712,13 @@ textarea.form-control { resize: vertical; min-height: 80px; }
   .badge-count { font-size: 0.6875rem; }
 
   /* Login page */
-  .login-form-wrapper { padding: 1.5rem 1.25rem; }
+  .login-right { padding: 1.25rem; align-items: flex-start; padding-top: 2rem; }
+  .login-form-wrapper { padding: 0; }
   .login-header h2 { font-size: 1.5rem; }
 
   /* Alert */
   .alert { padding: 0.75rem; font-size: 0.8125rem; }
+
 }
 
 /* ─── Very small phones (iPhone SE, etc.) ─── */

@@ -53,12 +53,12 @@
       <table class="table">
         <thead>
           <tr>
-            <th>No</th>
+            <th class="col-hide-mobile">No</th>
             <th>Nama Karyawan</th>
-            <th>Departemen</th>
+            <th class="col-hide-mobile">Departemen</th>
             <th>Tanggal</th>
             <th>Status</th>
-            <th>Keterangan</th>
+            <th class="col-hide-mobile">Keterangan</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -75,7 +75,7 @@
           <% } else { %>
             <% attendances.forEach(function(a, i) { %>
               <tr>
-                <td><%= i + 1 %></td>
+                <td class="col-hide-mobile"><%= i + 1 %></td>
                 <td>
                   <div class="employee-name-cell">
                     <div class="employee-avatar"><%= a.employee_name.charAt(0).toUpperCase() %></div>
@@ -85,7 +85,7 @@
                     </div>
                   </div>
                 </td>
-                <td><span class="dept-badge"><%= a.department %></span></td>
+                <td class="col-hide-mobile"><span class="dept-badge"><%= a.department %></span></td>
                 <td>
                   <%= new Date(a.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) %>
                 </td>
@@ -97,7 +97,7 @@
                     <%= a.status %>
                   </span>
                 </td>
-                <td class="text-muted"><%= a.description || '-' %></td>
+                <td class="text-muted col-hide-mobile"><%= a.description || '-' %></td>
                 <td>
                   <div class="action-buttons">
                     <a href="/attendances/<%= a.id %>" class="btn btn-xs btn-info" title="Detail">
@@ -107,7 +107,7 @@
                       <i data-lucide="edit-2"></i>
                     </a>
                     <button class="btn btn-xs btn-danger" title="Hapus"
-                      onclick="confirmDelete('/attendances/<%= a.id %>', 'Hapus data absensi <%= a.employee_name %> pada tanggal <%= new Date(a.date + "T00:00:00").toLocaleDateString("id-ID") %>?')">
+                      onclick="confirmDelete('/attendances/<%= a.id %>', 'Hapus absensi <%= a.employee_name %>?')">
                       <i data-lucide="trash-2"></i>
                     </button>
                   </div>

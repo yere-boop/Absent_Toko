@@ -36,7 +36,7 @@ router.get('/create', (req, res) => {
     active: 'attendances',
     employees,
     error: req.flash('error'),
-    old: req.flash('old')[0] || {}
+    old: (() => { try { const d = req.flash('old')[0]; return d ? JSON.parse(d) : {}; } catch(e) { return {}; } })()
   });
 });
 

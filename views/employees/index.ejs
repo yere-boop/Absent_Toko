@@ -51,12 +51,12 @@
       <table class="table">
         <thead>
           <tr>
-            <th>No</th>
-            <th>NIK</th>
+            <th class="col-hide-mobile">No</th>
+            <th class="col-hide-mobile">NIK</th>
             <th>Nama Lengkap</th>
-            <th>Jabatan</th>
+            <th class="col-hide-mobile">Jabatan</th>
             <th>Departemen</th>
-            <th>Telepon</th>
+            <th class="col-hide-mobile">Telepon</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr>
@@ -74,17 +74,20 @@
           <% } else { %>
             <% employees.forEach(function(emp, i) { %>
               <tr>
-                <td><%= i + 1 %></td>
-                <td><code class="code-text"><%= emp.employee_code %></code></td>
+                <td class="col-hide-mobile"><%= i + 1 %></td>
+                <td class="col-hide-mobile"><code class="code-text"><%= emp.employee_code %></code></td>
                 <td>
                   <div class="employee-name-cell">
                     <div class="employee-avatar"><%= emp.name.charAt(0).toUpperCase() %></div>
-                    <strong><%= emp.name %></strong>
+                    <div>
+                      <strong><%= emp.name %></strong>
+                      <small class="text-muted d-block col-hide-desktop"><%= emp.employee_code %></small>
+                    </div>
                   </div>
                 </td>
-                <td><%= emp.position %></td>
+                <td class="col-hide-mobile"><%= emp.position %></td>
                 <td><span class="dept-badge"><%= emp.department %></span></td>
-                <td><%= emp.phone || '-' %></td>
+                <td class="col-hide-mobile"><%= emp.phone || '-' %></td>
                 <td>
                   <span class="badge <%= emp.status === 'Aktif' ? 'badge-success' : 'badge-secondary' %>">
                     <%= emp.status %>
