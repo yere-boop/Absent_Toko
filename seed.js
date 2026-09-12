@@ -52,7 +52,7 @@ console.log('\n📋 Membuat data absensi contoh...');
 
 // Generate attendances for the past 5 days
 const today = new Date();
-const statuses = ['Hadir', 'Hadir', 'Hadir', 'Hadir', 'Izin', 'Alpa']; // Weighted towards Hadir
+const statuses = ['Hadir', 'Hadir', 'Hadir', 'Hadir', 'Tidak Hadir', 'Setengah Hari', 'Lembur']; // Weighted towards Hadir
 
 for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
   const date = new Date(today);
@@ -70,9 +70,18 @@ for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
 
     const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
     let description = '';
-    if (randomStatus === 'Izin') {
+    if (randomStatus === 'Tidak Hadir' || randomStatus === 'Setengah Hari') {
       const reasons = ['Sakit', 'Urusan keluarga', 'Keperluan pribadi', 'Cuti tahunan', 'Pemeriksaan kesehatan'];
       description = reasons[Math.floor(Math.random() * reasons.length)];
+    }
+    
+    let arrival_time = null;
+    let is_overtime = 0;
+    if (randomStatus === 'Hadir' || randomStatus === 'Lembur' || randomStatus === 'Setengah Hari') {
+      arrival_time = '08:00';
+    }
+    if (randomStatus === 'Lembur') {
+      is_overtime = 1;
     }
 
     try {
@@ -81,6 +90,8 @@ for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
           employee_id: empId,
           date: dateStr,
           status: randomStatus,
+          arrival_time,
+          is_overtime,
           description
         });
       }
