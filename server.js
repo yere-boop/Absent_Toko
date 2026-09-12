@@ -93,14 +93,19 @@ app.use((req, res) => {
 });
 
 // Start server
-const startServer = async () => {
-  await db.initDB();
-  await seedAdmin();
-  app.listen(PORT, () => {
-    console.log(`\n✅ Server berjalan di http://localhost:${PORT}`);
-    console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
-    console.log(`🔐 Login: http://localhost:${PORT}/login\n`);
-  });
-};
-
-startServer();
+if (process.env.VERCEL) {
+  // Export app for Vercel Serverless environment
+  module.exports = app;
+} else {
+  // Local environment startup
+  const startServer = async () => {
+    await db.initDB();
+    await seedAdmin();
+    app.listen(PORT, () => {
+      console.log(`\n✅ Server berjalan di http://localhost:${PORT}`);
+      console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
+      console.log(`🔐 Login: http://localhost:${PORT}/login\n`);
+    });
+  };
+  startServer();
+}
