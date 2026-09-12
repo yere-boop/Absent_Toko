@@ -35,22 +35,22 @@ function formatDateShort(dateStr) {
 }
 
 // ─── GET /recap — Monthly recap ──────────────────────────────────────────────
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const { month, year, department, employee_id } = req.query;
 
   const now = new Date();
   const selectedMonth = month || (now.getMonth() + 1).toString();
   const selectedYear = year || now.getFullYear().toString();
 
-  const recap = Attendance.getRecap({
+  const recap = await Attendance.getRecap({
     month: selectedMonth,
     year: selectedYear,
     department: department || '',
     employeeId: employee_id || ''
   });
 
-  const departments = Employee.getDepartments();
-  const employees = Employee.getActiveEmployees();
+  const departments = await Employee.getDepartments();
+  const employees = await Employee.getActiveEmployees();
 
   const totals = recap.reduce((acc, r) => {
     acc.hadir += r.hadir;
@@ -93,7 +93,7 @@ router.get('/', (req, res) => {
 });
 
 // ─── GET /recap/weekly — Weekly recap page ───────────────────────────────────
-router.get('/weekly', (req, res) => {
+router.get('/weekly', async (req, res) => {
   const now = new Date();
   const { weekStart, department } = req.query;
 
@@ -102,14 +102,14 @@ router.get('/weekly', (req, res) => {
   const selectedStart = weekStart || defaultStart;
   const selectedEnd = getWeekEnd(selectedStart);
 
-  const recap = Attendance.getWeeklyRecap({
+  const recap = await Attendance.getWeeklyRecap({
     dateFrom: selectedStart,
     dateTo: selectedEnd,
     department: department || ''
   });
 
   // Get day-by-day detail
-  const detail = Attendance.getWeeklyDetail({ dateFrom: selectedStart, dateTo: selectedEnd });
+  const detail = await Attendance.getWeeklyDetail({ dateFrom: selectedStart, dateTo: selectedEnd });
 
   // Build date range array (7 days)
   const dateRange = [];
@@ -125,7 +125,7 @@ router.get('/weekly', (req, res) => {
     detailMap[`${a.employee_id}_${a.date}`] = a;
   });
 
-  const departments = Employee.getDepartments();
+  const departments = await Employee.getDepartments();
 
   const totals = recap.reduce((acc, r) => {
     acc.hadir += r.hadir;
@@ -152,20 +152,20 @@ router.get('/weekly', (req, res) => {
 });
 
 // ─── GET /recap/weekly/pdf — Download PDF ────────────────────────────────────
-router.get('/weekly/pdf', (req, res) => {
+router.get('/weekly/pdf', async (req, res) => {
   const now = new Date();
   const { weekStart, department } = req.query;
   const defaultStart = getWeekStart(now.toISOString().split('T')[0]);
   const selectedStart = weekStart || defaultStart;
   const selectedEnd = getWeekEnd(selectedStart);
 
-  const recap = Attendance.getWeeklyRecap({
+  const recap = await Attendance.getWeeklyRecap({
     dateFrom: selectedStart,
     dateTo: selectedEnd,
     department: department || ''
   });
 
-  const detail = Attendance.getWeeklyDetail({ dateFrom: selectedStart, dateTo: selectedEnd });
+  const detail = await Attendance.getWeeklyDetail({ dateFrom: selectedStart, dateTo: selectedEnd });
 
   // Build date range
   const dateRange = [];

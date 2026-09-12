@@ -2,60 +2,67 @@ const db = require('../config/database');
 
 const Employee = {
   // Get all employees with optional search and filter
-  findAll({ search = '', department = '', status = '' } = {}) {
+  async findAll({ search = '', department = '', status = '' } = {}) {
     let query = 'SELECT * FROM employees WHERE 1=1';
     const params = [];
+    let paramCount = 1;
 
     if (search) {
-      query += ' AND (name LIKE ? OR employee_code LIKE ? OR position LIKE ?)';
+      query += ` AND (name ILIKE $${paramCount} OR employee_code ILIKE $${paramCount + 1} OR position ILIKE $${paramCount + 2})`;
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      paramCount += 3;
     }
 
     if (department) {
-      query += ' AND department = ?';
+      query += ` AND department = $${paramCount}`;
       params.push(department);
+      paramCount++;
     }
 
     if (status) {
-      query += ' AND status = ?';
+      query += ` AND status = $${paramCount}`;
       params.push(status);
+      paramCount++;
     }
 
     query += ' ORDER BY name ASC';
-    return db.prepare(query).all(...params);
+    const res = await db.query(query, params);
+    return res.rows;
   },
 
   // Find by ID
-  findById(id) {
-    return db.prepare('SELECT * FROM employees WHERE id = ?').get(id);
+  async findById(id) {
+    const res = await db.query('SELECT * FROM employees WHERE id = $1', [id]);
+    return res.rows[0];
   },
 
   // Find by employee code
-  findByCode(code) {
-    return db.prepare('SELECT * FROM employees WHERE employee_code = ?').get(code);
+  async findByCode(code) {
+    const res = await db.query('SELECT * FROM employees WHERE employee_code = $1', [code]);
+    return res.rows[0];
   },
 
   // Auto-generate next employee code
-  generateCode() {
-    const last = db.prepare(
+  async generateCode() {
+    const res = await db.query(
       "SELECT employee_code FROM employees WHERE employee_code LIKE 'KRY-%' ORDER BY id DESC LIMIT 1"
-    ).get();
+    );
+    const last = res.rows[0];
     if (!last) return 'KRY-001';
     const num = parseInt(last.employee_code.replace('KRY-', ''), 10) || 0;
     return 'KRY-' + String(num + 1).padStart(3, '0');
   },
 
-  // Create new employee — hanya name & position yang wajib
-  create({ name, position, employee_code, department, phone, address, status }) {
+  // Create new employee
+  async create({ name, position, employee_code, department, phone, address, status }) {
     const code = employee_code && employee_code.trim()
       ? employee_code.trim()
-      : Employee.generateCode();
+      : await Employee.generateCode();
 
-    const stmt = db.prepare(`
+    const res = await db.query(`
       INSERT INTO employees (employee_code, name, position, department, phone, address, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-    return stmt.run(
+      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
+    `, [
       code,
       name,
       position || '',
@@ -63,17 +70,17 @@ const Employee = {
       phone || '',
       address || '',
       status || 'Aktif'
-    );
+    ]);
+    return { lastInsertRowid: res.rows[0].id };
   },
 
   // Update employee
-  update(id, { name, position, employee_code, department, phone, address, status }) {
-    const stmt = db.prepare(`
+  async update(id, { name, position, employee_code, department, phone, address, status }) {
+    await db.query(`
       UPDATE employees 
-      SET name = ?, position = ?, employee_code = ?, department = ?, phone = ?, address = ?, status = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    return stmt.run(
+      SET name = $1, position = $2, employee_code = $3, department = $4, phone = $5, address = $6, status = $7, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $8
+    `, [
       name,
       position || '',
       employee_code || '',
@@ -82,27 +89,30 @@ const Employee = {
       address || '',
       status || 'Aktif',
       id
-    );
+    ]);
   },
 
   // Delete employee
-  delete(id) {
-    return db.prepare('DELETE FROM employees WHERE id = ?').run(id);
+  async delete(id) {
+    await db.query('DELETE FROM employees WHERE id = $1', [id]);
   },
 
   // Count total employees
-  count() {
-    return db.prepare('SELECT COUNT(*) as total FROM employees WHERE status = ?').get('Aktif').total;
+  async count() {
+    const res = await db.query('SELECT COUNT(*) as total FROM employees WHERE status = $1', ['Aktif']);
+    return parseInt(res.rows[0].total, 10);
   },
 
   // Get all unique departments
-  getDepartments() {
-    return db.prepare("SELECT DISTINCT department FROM employees WHERE department != '' ORDER BY department").all().map(r => r.department);
+  async getDepartments() {
+    const res = await db.query("SELECT DISTINCT department FROM employees WHERE department != '' ORDER BY department");
+    return res.rows.map(r => r.department);
   },
 
   // Get all active employees (for dropdown)
-  getActiveEmployees() {
-    return db.prepare('SELECT id, employee_code, name, department, position FROM employees WHERE status = ? ORDER BY name').all('Aktif');
+  async getActiveEmployees() {
+    const res = await db.query('SELECT id, employee_code, name, department, position FROM employees WHERE status = $1 ORDER BY name', ['Aktif']);
+    return res.rows;
   }
 };
 

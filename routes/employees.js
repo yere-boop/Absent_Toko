@@ -3,10 +3,10 @@ const router = express.Router();
 const Employee = require('../models/Employee');
 
 // GET /employees - List all employees
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const { search, department, status } = req.query;
-  const employees = Employee.findAll({ search, department, status });
-  const departments = Employee.getDepartments();
+  const employees = await Employee.findAll({ search, department, status });
+  const departments = await Employee.getDepartments();
 
   res.render('employees/index', {
     title: 'Data Karyawan',
@@ -30,7 +30,7 @@ router.get('/create', (req, res) => {
 });
 
 // POST /employees - Create new employee (only name + position required)
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { name, position } = req.body;
 
   // Validation — only name & position required
@@ -45,7 +45,7 @@ router.post('/', (req, res) => {
   }
 
   try {
-    Employee.create({
+    await Employee.create({
       name: name.trim(),
       position: position.trim(),
     });
@@ -60,15 +60,15 @@ router.post('/', (req, res) => {
 });
 
 // GET /employees/:id - Show employee detail
-router.get('/:id', (req, res) => {
-  const employee = Employee.findById(req.params.id);
+router.get('/:id', async (req, res) => {
+  const employee = await Employee.findById(req.params.id);
   if (!employee) {
     req.flash('error', 'Karyawan tidak ditemukan.');
     return res.redirect('/employees');
   }
 
   const Attendance = require('../models/Attendance');
-  const attendances = Attendance.findAll({ search: '', status: '', department: '', dateFrom: '', dateTo: '' });
+  const attendances = await Attendance.findAll({ search: '', status: '', department: '', dateFrom: '', dateTo: '' });
   const employeeAttendances = attendances.filter(a => a.employee_id === employee.id);
 
   res.render('employees/show', {
@@ -80,8 +80,8 @@ router.get('/:id', (req, res) => {
 });
 
 // GET /employees/:id/edit - Show edit form
-router.get('/:id/edit', (req, res) => {
-  const employee = Employee.findById(req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const employee = await Employee.findById(req.params.id);
   if (!employee) {
     req.flash('error', 'Karyawan tidak ditemukan.');
     return res.redirect('/employees');
@@ -96,11 +96,11 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // PUT /employees/:id - Update employee (only name + position required)
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { name, position } = req.body;
   const id = req.params.id;
 
-  const employee = Employee.findById(id);
+  const employee = await Employee.findById(id);
   if (!employee) {
     req.flash('error', 'Karyawan tidak ditemukan.');
     return res.redirect('/employees');
@@ -116,7 +116,7 @@ router.put('/:id', (req, res) => {
   }
 
   try {
-    Employee.update(id, {
+    await Employee.update(id, {
       name: name.trim(),
       position: position.trim(),
       employee_code: employee.employee_code,
@@ -135,15 +135,15 @@ router.put('/:id', (req, res) => {
 });
 
 // DELETE /employees/:id - Delete employee
-router.delete('/:id', (req, res) => {
-  const employee = Employee.findById(req.params.id);
+router.delete('/:id', async (req, res) => {
+  const employee = await Employee.findById(req.params.id);
   if (!employee) {
     req.flash('error', 'Karyawan tidak ditemukan.');
     return res.redirect('/employees');
   }
 
   try {
-    Employee.delete(req.params.id);
+    await Employee.delete(req.params.id);
     req.flash('success', `Karyawan "${employee.name}" berhasil dihapus.`);
   } catch (err) {
     req.flash('error', 'Gagal menghapus karyawan: ' + err.message);

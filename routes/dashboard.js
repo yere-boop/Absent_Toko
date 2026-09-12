@@ -4,13 +4,13 @@ const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
 
 // GET /dashboard
-router.get('/dashboard', (req, res) => {
+router.get('/dashboard', async (req, res) => {
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
 
-  const totalEmployees = Employee.count();
-  const todayStats = Attendance.getTodayStats(todayStr);
-  const recentAttendances = Attendance.getRecent(10);
+  const totalEmployees = await Employee.count();
+  const todayStats = await Attendance.getTodayStats(todayStr);
+  const recentAttendances = await Attendance.getRecent(10);
 
   res.render('dashboard', {
     title: 'Dashboard',

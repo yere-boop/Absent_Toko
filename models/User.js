@@ -2,22 +2,28 @@ const db = require('../config/database');
 const bcrypt = require('bcryptjs');
 
 const User = {
-  findByUsername(username) {
-    return db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  async findByUsername(username) {
+    const res = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+    return res.rows[0];
   },
 
-  findByEmail(email) {
-    return db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  async findByEmail(email) {
+    const res = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    return res.rows[0];
   },
 
-  findById(id) {
-    return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+  async findById(id) {
+    const res = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+    return res.rows[0];
   },
 
-  create({ username, email, password }) {
+  async create({ username, email, password }) {
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
-    return stmt.run(username, email, hashedPassword);
+    const res = await db.query(
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
+      [username, email, hashedPassword]
+    );
+    return res.rows[0];
   },
 
   verifyPassword(plainPassword, hashedPassword) {

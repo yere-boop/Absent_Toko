@@ -13,7 +13,7 @@ router.get('/login', isGuest, (req, res) => {
 });
 
 // POST /login - Process login
-router.post('/login', isGuest, (req, res) => {
+router.post('/login', isGuest, async (req, res) => {
   const { username, password } = req.body;
 
   // Validation
@@ -23,7 +23,7 @@ router.post('/login', isGuest, (req, res) => {
   }
 
   // Find user
-  const user = User.findByUsername(username);
+  const user = await User.findByUsername(username);
   if (!user) {
     req.flash('error', 'Username atau password salah.');
     return res.redirect('/login');

@@ -4,10 +4,10 @@ const Attendance = require('../models/Attendance');
 const Employee = require('../models/Employee');
 
 // GET /attendances - List all attendances
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const { search, status, department, dateFrom, dateTo, date } = req.query;
-  const attendances = Attendance.findAll({ search, status, department, dateFrom, dateTo, date });
-  const departments = Employee.getDepartments();
+  const attendances = await Attendance.findAll({ search, status, department, dateFrom, dateTo, date });
+  const departments = await Employee.getDepartments();
 
   res.render('attendances/index', {
     title: 'Data Absensi',
@@ -28,8 +28,8 @@ router.get('/', (req, res) => {
 });
 
 // GET /attendances/create - Show create form
-router.get('/create', (req, res) => {
-  const employees = Employee.getActiveEmployees();
+router.get('/create', async (req, res) => {
+  const employees = await Employee.getActiveEmployees();
 
   res.render('attendances/create', {
     title: 'Tambah Absensi',
@@ -41,7 +41,7 @@ router.get('/create', (req, res) => {
 });
 
 // POST /attendances - Create new attendance
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { employee_id, date, status, arrival_time, is_overtime, description } = req.body;
 
   // Validation
@@ -54,7 +54,7 @@ router.post('/', (req, res) => {
   }
 
   // Check duplicate attendance
-  if (employee_id && date && Attendance.existsForDate(employee_id, date)) {
+  if (employee_id && date && await Attendance.existsForDate(employee_id, date)) {
     errors.push('Karyawan ini sudah memiliki data absensi pada tanggal tersebut.');
   }
 
@@ -65,7 +65,7 @@ router.post('/', (req, res) => {
   }
 
   try {
-    Attendance.create({
+    await Attendance.create({
       employee_id: parseInt(employee_id),
       date,
       status,
@@ -84,8 +84,8 @@ router.post('/', (req, res) => {
 });
 
 // GET /attendances/:id - Show attendance detail
-router.get('/:id', (req, res) => {
-  const attendance = Attendance.findById(req.params.id);
+router.get('/:id', async (req, res) => {
+  const attendance = await Attendance.findById(req.params.id);
   if (!attendance) {
     req.flash('error', 'Data absensi tidak ditemukan.');
     return res.redirect('/attendances');
@@ -99,14 +99,14 @@ router.get('/:id', (req, res) => {
 });
 
 // GET /attendances/:id/edit - Show edit form
-router.get('/:id/edit', (req, res) => {
-  const attendance = Attendance.findById(req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const attendance = await Attendance.findById(req.params.id);
   if (!attendance) {
     req.flash('error', 'Data absensi tidak ditemukan.');
     return res.redirect('/attendances');
   }
 
-  const employees = Employee.getActiveEmployees();
+  const employees = await Employee.getActiveEmployees();
 
   res.render('attendances/edit', {
     title: 'Edit Absensi',
@@ -118,11 +118,11 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // PUT /attendances/:id - Update attendance
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { employee_id, date, status, arrival_time, is_overtime, description } = req.body;
   const id = req.params.id;
 
-  const attendance = Attendance.findById(id);
+  const attendance = await Attendance.findById(id);
   if (!attendance) {
     req.flash('error', 'Data absensi tidak ditemukan.');
     return res.redirect('/attendances');
@@ -138,7 +138,7 @@ router.put('/:id', (req, res) => {
   }
 
   // Check duplicate attendance (exclude current)
-  if (employee_id && date && Attendance.existsForDate(employee_id, date, id)) {
+  if (employee_id && date && await Attendance.existsForDate(employee_id, date, id)) {
     errors.push('Karyawan ini sudah memiliki data absensi pada tanggal tersebut.');
   }
 
@@ -148,7 +148,7 @@ router.put('/:id', (req, res) => {
   }
 
   try {
-    Attendance.update(id, {
+    await Attendance.update(id, {
       employee_id: parseInt(employee_id),
       date,
       status,
@@ -166,15 +166,15 @@ router.put('/:id', (req, res) => {
 });
 
 // DELETE /attendances/:id - Delete attendance
-router.delete('/:id', (req, res) => {
-  const attendance = Attendance.findById(req.params.id);
+router.delete('/:id', async (req, res) => {
+  const attendance = await Attendance.findById(req.params.id);
   if (!attendance) {
     req.flash('error', 'Data absensi tidak ditemukan.');
     return res.redirect('/attendances');
   }
 
   try {
-    Attendance.delete(req.params.id);
+    await Attendance.delete(req.params.id);
     req.flash('success', 'Data absensi berhasil dihapus.');
   } catch (err) {
     req.flash('error', 'Gagal menghapus data absensi: ' + err.message);

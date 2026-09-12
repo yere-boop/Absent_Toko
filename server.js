@@ -7,14 +7,20 @@ const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 
 // Initialize database (creates tables if not exist)
-require('./config/database');
+const db = require('./config/database');
 
 // Auto-seed admin if not exists (for first deployment)
 const User = require('./models/User');
-const existingAdmin = User.findByUsername('admin');
-if (!existingAdmin) {
-  User.create({ username: 'admin', email: 'admin@kantor.com', password: 'admin123' });
-  console.log('✅ Admin user created automatically.');
+async function seedAdmin() {
+  try {
+    const existingAdmin = await User.findByUsername('admin');
+    if (!existingAdmin) {
+      await User.create({ username: 'admin', email: 'admin@kantor.com', password: 'admin123' });
+      console.log('✅ Admin user created automatically.');
+    }
+  } catch (err) {
+    console.error('Failed to seed admin:', err);
+  }
 }
 
 const app = express();
@@ -87,8 +93,14 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`\n✅ Server berjalan di http://localhost:${PORT}`);
-  console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
-  console.log(`🔐 Login: http://localhost:${PORT}/login\n`);
-});
+const startServer = async () => {
+  await db.initDB();
+  await seedAdmin();
+  app.listen(PORT, () => {
+    console.log(`\n✅ Server berjalan di http://localhost:${PORT}`);
+    console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
+    console.log(`🔐 Login: http://localhost:${PORT}/login\n`);
+  });
+};
+
+startServer();
