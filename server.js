@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
 const flash = require('connect-flash');
 const expressLayouts = require('express-ejs-layouts');
@@ -40,15 +40,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(methodOverride('_method'));
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'default-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    httpOnly: true
-  }
+// Session configuration (cookie-session is serverless-friendly)
+app.use(cookieSession({
+  name: 'session',
+  keys: [process.env.SESSION_SECRET || 'default-secret-key'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
 // Flash messages
