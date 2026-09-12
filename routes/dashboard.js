@@ -5,11 +5,9 @@ const Attendance = require('../models/Attendance');
 
 // GET /dashboard
 router.get('/dashboard', (req, res) => {
-  // Get today's date in YYYY-MM-DD format
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
 
-  // Get stats
   const totalEmployees = Employee.count();
   const todayStats = Attendance.getTodayStats(todayStr);
   const recentAttendances = Attendance.getRecent(10);

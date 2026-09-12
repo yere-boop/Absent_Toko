@@ -2,45 +2,37 @@
   <!-- Stats Cards -->
   <div class="stats-grid">
     <div class="stat-card stat-primary">
-      <div class="stat-icon">
-        <i data-lucide="users"></i>
-      </div>
+      <div class="stat-icon"><i data-lucide="users"></i></div>
       <div class="stat-info">
         <span class="stat-value"><%= totalEmployees %></span>
-        <span class="stat-label">Total Karyawan Aktif</span>
+        <span class="stat-label">Total Karyawan</span>
       </div>
       <div class="stat-decoration"></div>
     </div>
 
     <div class="stat-card stat-success">
-      <div class="stat-icon">
-        <i data-lucide="user-check"></i>
-      </div>
+      <div class="stat-icon"><i data-lucide="user-check"></i></div>
       <div class="stat-info">
-        <span class="stat-value"><%= todayStats.Hadir %></span>
+        <span class="stat-value"><%= todayStats['Hadir'] %></span>
         <span class="stat-label">Hadir Hari Ini</span>
       </div>
       <div class="stat-decoration"></div>
     </div>
 
     <div class="stat-card stat-warning">
-      <div class="stat-icon">
-        <i data-lucide="user-minus"></i>
-      </div>
+      <div class="stat-icon"><i data-lucide="user-minus"></i></div>
       <div class="stat-info">
-        <span class="stat-value"><%= todayStats.Izin %></span>
-        <span class="stat-label">Izin Hari Ini</span>
+        <span class="stat-value"><%= todayStats['Setengah Hari'] %></span>
+        <span class="stat-label">Setengah Hari</span>
       </div>
       <div class="stat-decoration"></div>
     </div>
 
     <div class="stat-card stat-danger">
-      <div class="stat-icon">
-        <i data-lucide="user-x"></i>
-      </div>
+      <div class="stat-icon"><i data-lucide="user-x"></i></div>
       <div class="stat-info">
-        <span class="stat-value"><%= todayStats.Alpa %></span>
-        <span class="stat-label">Alpa Hari Ini</span>
+        <span class="stat-value"><%= todayStats['Tidak Hadir'] %></span>
+        <span class="stat-label">Tidak Hadir</span>
       </div>
       <div class="stat-decoration"></div>
     </div>
@@ -50,19 +42,19 @@
   <div class="quick-actions">
     <a href="/attendances/create" class="quick-action-btn">
       <i data-lucide="plus-circle"></i>
-      <span>Tambah Absensi</span>
+      <span>Isi Absen</span>
     </a>
     <a href="/employees/create" class="quick-action-btn">
       <i data-lucide="user-plus"></i>
-      <span>Tambah Karyawan</span>
+      <span>Tambah Orang</span>
+    </a>
+    <a href="/recap/weekly" class="quick-action-btn">
+      <i data-lucide="calendar-range"></i>
+      <span>Rekap Mingguan</span>
     </a>
     <a href="/recap" class="quick-action-btn">
       <i data-lucide="file-bar-chart"></i>
-      <span>Lihat Rekap</span>
-    </a>
-    <a href="/attendances" class="quick-action-btn">
-      <i data-lucide="clipboard-list"></i>
-      <span>Semua Absensi</span>
+      <span>Rekap Bulanan</span>
     </a>
   </div>
 
@@ -83,19 +75,17 @@
         <table class="table">
           <thead>
             <tr>
-              <th>No</th>
-              <th>Nama Karyawan</th>
-              <th>NIK</th>
-              <th>Departemen</th>
+              <th>Nama</th>
               <th>Tanggal</th>
               <th>Status</th>
-              <th>Keterangan</th>
+              <th class="col-hide-mobile">Jam Masuk</th>
+              <th class="col-hide-mobile">Lembur</th>
             </tr>
           </thead>
           <tbody>
             <% if (recentAttendances.length === 0) { %>
               <tr>
-                <td colspan="7" class="text-center text-muted">
+                <td colspan="5" class="text-center text-muted">
                   <div class="empty-state">
                     <i data-lucide="inbox"></i>
                     <p>Belum ada data absensi</p>
@@ -105,24 +95,38 @@
             <% } else { %>
               <% recentAttendances.forEach(function(a, i) { %>
                 <tr>
-                  <td><%= i + 1 %></td>
                   <td>
                     <div class="employee-name-cell">
                       <div class="employee-avatar"><%= a.employee_name.charAt(0).toUpperCase() %></div>
                       <strong><%= a.employee_name %></strong>
                     </div>
                   </td>
-                  <td><code class="code-text"><%= a.employee_code %></code></td>
-                  <td><span class="dept-badge"><%= a.department %></span></td>
                   <td>
                     <%= new Date(a.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %>
                   </td>
                   <td>
-                    <span class="badge badge-<%= a.status === 'Hadir' ? 'success' : a.status === 'Izin' ? 'warning' : 'danger' %>">
-                      <%= a.status %>
-                    </span>
+                    <% if (a.status === 'Hadir') { %>
+                      <span class="badge badge-success"><i data-lucide="check"></i> Hadir</span>
+                    <% } else if (a.status === 'Lembur') { %>
+                      <span class="badge" style="background:#8b5cf6; color:white;"><i data-lucide="moon"></i> Lembur</span>
+                    <% } else if (a.status === 'Tidak Hadir') { %>
+                      <span class="badge badge-danger"><i data-lucide="x"></i> Tidak Hadir</span>
+                    <% } else if (a.status === 'Setengah Hari') { %>
+                      <span class="badge badge-warning"><i data-lucide="clock"></i> Setengah Hari</span>
+                    <% } else { %>
+                      <span class="badge badge-secondary"><%= a.status %></span>
+                    <% } %>
                   </td>
-                  <td><%= a.description || '-' %></td>
+                  <td class="col-hide-mobile">
+                    <% if (a.arrival_time) { %>
+                      <span class="time-badge"><i data-lucide="clock-3"></i> <%= a.arrival_time %></span>
+                    <% } else { %><span class="text-muted">-</span><% } %>
+                  </td>
+                  <td class="col-hide-mobile">
+                    <% if (a.is_overtime) { %>
+                      <span class="badge badge-overtime-pill">🌙 Lembur</span>
+                    <% } else { %><span class="text-muted">-</span><% } %>
+                  </td>
                 </tr>
               <% }); %>
             <% } %>

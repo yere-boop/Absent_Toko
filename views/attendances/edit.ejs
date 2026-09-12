@@ -16,39 +16,65 @@
     <div class="card-body">
       <form action="/attendances/<%= attendance.id %>?_method=PUT" method="POST" id="attendanceEditForm" novalidate>
         <div class="form-grid">
+          <!-- Karyawan -->
           <div class="form-group form-full">
             <label for="employee_id">Karyawan <span class="required">*</span></label>
             <select id="employee_id" name="employee_id" class="form-control" required>
               <option value="">-- Pilih Karyawan --</option>
               <% employees.forEach(function(emp) { %>
                 <option value="<%= emp.id %>" <%= attendance.employee_id == emp.id ? 'selected' : '' %>>
-                  [<%= emp.employee_code %>] <%= emp.name %> — <%= emp.department %>
+                  <%= emp.name %><% if (emp.position) { %> — <%= emp.position %><% } %>
                 </option>
               <% }); %>
             </select>
           </div>
 
+          <!-- Tanggal -->
           <div class="form-group">
             <label for="date">Tanggal <span class="required">*</span></label>
             <input type="date" id="date" name="date" class="form-control"
               value="<%= attendance.date %>" required>
           </div>
 
+          <!-- Status -->
           <div class="form-group">
             <label for="status">Status Absensi <span class="required">*</span></label>
             <select id="status" name="status" class="form-control" required>
               <option value="">-- Pilih Status --</option>
-              <option value="Hadir" <%= attendance.status === 'Hadir' ? 'selected' : '' %>>✅ Hadir</option>
-              <option value="Izin" <%= attendance.status === 'Izin' ? 'selected' : '' %>>🕐 Izin</option>
-              <option value="Alpa" <%= attendance.status === 'Alpa' ? 'selected' : '' %>>❌ Alpa</option>
+              <option value="Hadir"         <%= attendance.status === 'Hadir' ? 'selected' : '' %>>✅ Hadir</option>
+              <option value="Tidak Hadir"   <%= attendance.status === 'Tidak Hadir' ? 'selected' : '' %>>❌ Tidak Hadir</option>
+              <option value="Setengah Hari" <%= attendance.status === 'Setengah Hari' ? 'selected' : '' %>>🕐 Setengah Hari</option>
+              <option value="Lembur"        <%= attendance.status === 'Lembur' ? 'selected' : '' %>>🌙 Lembur</option>
             </select>
           </div>
 
-          <div class="form-group form-full" id="descriptionGroup">
+          <!-- Jam Kedatangan -->
+          <div class="form-group" id="arrivalGroup">
+            <label for="arrival_time">Jam Masuk <span class="required" id="arrivalRequired" style="display:none;">*</span></label>
+            <input type="time" id="arrival_time" name="arrival_time" class="form-control"
+              value="<%= attendance.arrival_time || '' %>">
+          </div>
+
+          <!-- Lembur -->
+          <div class="form-group form-full" id="overtimeGroup" style="display:none;">
+            <div class="checkbox-card">
+              <label class="checkbox-label-full">
+                <input type="checkbox" id="is_overtime" name="is_overtime" value="on"
+                  <%= attendance.is_overtime ? 'checked' : '' %>>
+                <span class="checkbox-custom"></span>
+                <div class="checkbox-text">
+                  <strong>🌙 Lembur</strong>
+                  <small>Tandai jika karyawan ini melakukan lembur</small>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Keterangan -->
+          <div class="form-group form-full" id="descriptionGroup" style="display:none;">
             <label for="description">
               Keterangan
-              <span class="required" id="descRequired" style="display:none;">*</span>
-              <span class="form-hint">(Wajib diisi untuk status Izin)</span>
+              <span class="form-hint">(Opsional)</span>
             </label>
             <textarea id="description" name="description" class="form-control" rows="3"
               placeholder="Tuliskan keterangan jika diperlukan"><%= attendance.description || '' %></textarea>
@@ -69,20 +95,44 @@
 
 <script>
   const statusSelect = document.getElementById('status');
+  const arrivalGroup = document.getElementById('arrivalGroup');
+  const arrivalInput = document.getElementById('arrival_time');
+  const overtimeGroup = document.getElementById('overtimeGroup');
   const descGroup = document.getElementById('descriptionGroup');
   const descInput = document.getElementById('description');
-  const descRequired = document.getElementById('descRequired');
 
-  function toggleDescription() {
-    if (statusSelect.value === 'Izin') {
-      descRequired.style.display = 'inline';
-      descInput.required = true;
+  const arrivalRequired = document.getElementById('arrivalRequired');
+
+  function toggleFields() {
+    const val = statusSelect.value;
+    if (val === 'Hadir') {
+      overtimeGroup.style.display = 'block';
+      descGroup.style.display = 'none';
+      arrivalInput.required = true;
+      arrivalRequired.style.display = 'inline';
+    } else if (val === 'Lembur') {
+      overtimeGroup.style.display = 'none';
+      descGroup.style.display = 'none';
+      arrivalInput.required = true;
+      arrivalRequired.style.display = 'inline';
+    } else if (val === 'Setengah Hari') {
+      overtimeGroup.style.display = 'none';
+      descGroup.style.display = 'block';
+      arrivalInput.required = true;
+      arrivalRequired.style.display = 'inline';
+    } else if (val === 'Tidak Hadir') {
+      overtimeGroup.style.display = 'none';
+      descGroup.style.display = 'block';
+      arrivalInput.required = false;
+      arrivalRequired.style.display = 'none';
     } else {
-      descRequired.style.display = 'none';
-      descInput.required = false;
+      overtimeGroup.style.display = 'none';
+      descGroup.style.display = 'none';
+      arrivalInput.required = false;
+      arrivalRequired.style.display = 'none';
     }
   }
 
-  statusSelect.addEventListener('change', toggleDescription);
-  toggleDescription();
+  statusSelect.addEventListener('change', toggleFields);
+  toggleFields();
 </script>

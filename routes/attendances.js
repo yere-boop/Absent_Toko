@@ -42,15 +42,15 @@ router.get('/create', (req, res) => {
 
 // POST /attendances - Create new attendance
 router.post('/', (req, res) => {
-  const { employee_id, date, status, description } = req.body;
+  const { employee_id, date, status, arrival_time, is_overtime, description } = req.body;
 
   // Validation
   const errors = [];
   if (!employee_id) errors.push('Karyawan wajib dipilih.');
   if (!date) errors.push('Tanggal wajib diisi.');
   if (!status) errors.push('Status absensi wajib dipilih.');
-  if (status === 'Izin' && (!description || !description.trim())) {
-    errors.push('Keterangan wajib diisi untuk status Izin.');
+  if ((status === 'Hadir' || status === 'Lembur' || status === 'Setengah Hari') && (!arrival_time || !arrival_time.trim())) {
+    errors.push('Jam masuk wajib diisi jika status Hadir/Lembur/Setengah Hari.');
   }
 
   // Check duplicate attendance
@@ -69,6 +69,8 @@ router.post('/', (req, res) => {
       employee_id: parseInt(employee_id),
       date,
       status,
+      arrival_time: arrival_time ? arrival_time.trim() : null,
+      is_overtime: is_overtime === 'on' || is_overtime === '1' ? 1 : 0,
       description: description ? description.trim() : ''
     });
 
@@ -117,7 +119,7 @@ router.get('/:id/edit', (req, res) => {
 
 // PUT /attendances/:id - Update attendance
 router.put('/:id', (req, res) => {
-  const { employee_id, date, status, description } = req.body;
+  const { employee_id, date, status, arrival_time, is_overtime, description } = req.body;
   const id = req.params.id;
 
   const attendance = Attendance.findById(id);
@@ -131,8 +133,8 @@ router.put('/:id', (req, res) => {
   if (!employee_id) errors.push('Karyawan wajib dipilih.');
   if (!date) errors.push('Tanggal wajib diisi.');
   if (!status) errors.push('Status absensi wajib dipilih.');
-  if (status === 'Izin' && (!description || !description.trim())) {
-    errors.push('Keterangan wajib diisi untuk status Izin.');
+  if ((status === 'Hadir' || status === 'Lembur' || status === 'Setengah Hari') && (!arrival_time || !arrival_time.trim())) {
+    errors.push('Jam masuk wajib diisi jika status Hadir/Lembur/Setengah Hari.');
   }
 
   // Check duplicate attendance (exclude current)
@@ -150,6 +152,8 @@ router.put('/:id', (req, res) => {
       employee_id: parseInt(employee_id),
       date,
       status,
+      arrival_time: arrival_time ? arrival_time.trim() : null,
+      is_overtime: is_overtime === 'on' || is_overtime === '1' ? 1 : 0,
       description: description ? description.trim() : ''
     });
 

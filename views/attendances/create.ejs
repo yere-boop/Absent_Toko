@@ -16,6 +16,7 @@
     <div class="card-body">
       <form action="/attendances" method="POST" id="attendanceForm" novalidate>
         <div class="form-grid">
+          <!-- Karyawan -->
           <div class="form-group form-full">
             <label for="employee_id">Karyawan <span class="required">*</span></label>
             <select id="employee_id" name="employee_id" class="form-control" required>
@@ -23,12 +24,13 @@
               <% employees.forEach(function(emp) { %>
                 <option value="<%= emp.id %>"
                   <%= (typeof old !== 'undefined' && old.employee_id == emp.id) ? 'selected' : '' %>>
-                  [<%= emp.employee_code %>] <%= emp.name %> — <%= emp.department %>
+                  <%= emp.name %><% if (emp.position) { %> — <%= emp.position %><% } %>
                 </option>
               <% }); %>
             </select>
           </div>
 
+          <!-- Tanggal -->
           <div class="form-group">
             <label for="date">Tanggal <span class="required">*</span></label>
             <input type="date" id="date" name="date" class="form-control"
@@ -36,23 +38,50 @@
               required>
           </div>
 
+          <!-- Status -->
           <div class="form-group">
             <label for="status">Status Absensi <span class="required">*</span></label>
             <select id="status" name="status" class="form-control" required>
               <option value="">-- Pilih Status --</option>
-              <option value="Hadir" <%= (typeof old !== 'undefined' && old.status === 'Hadir') ? 'selected' : '' %>>✅ Hadir</option>
-              <option value="Izin" <%= (typeof old !== 'undefined' && old.status === 'Izin') ? 'selected' : '' %>>🕐 Izin</option>
-              <option value="Alpa" <%= (typeof old !== 'undefined' && old.status === 'Alpa') ? 'selected' : '' %>>❌ Alpa</option>
+              <option value="Hadir"       <%= (typeof old !== 'undefined' && old.status === 'Hadir') ? 'selected' : '' %>>✅ Hadir</option>
+              <option value="Tidak Hadir" <%= (typeof old !== 'undefined' && old.status === 'Tidak Hadir') ? 'selected' : '' %>>❌ Tidak Hadir</option>
+              <option value="Setengah Hari" <%= (typeof old !== 'undefined' && old.status === 'Setengah Hari') ? 'selected' : '' %>>🕐 Setengah Hari</option>
+              <option value="Lembur"      <%= (typeof old !== 'undefined' && old.status === 'Lembur') ? 'selected' : '' %>>🌙 Lembur</option>
             </select>
           </div>
 
+          <!-- Jam Kedatangan (tampil jika Hadir/Lembur) -->
+          <div class="form-group" id="arrivalGroup">
+            <label for="arrival_time">
+              Jam Masuk <span class="required" id="arrivalRequired" style="display:none;">*</span>
+            </label>
+            <input type="time" id="arrival_time" name="arrival_time" class="form-control"
+              value="<%= typeof old !== 'undefined' && old.arrival_time ? old.arrival_time : '' %>">
+          </div>
+
+          <!-- Lembur checkbox (tampil jika Hadir) -->
+          <div class="form-group form-full" id="overtimeGroup" style="display:none;">
+            <div class="checkbox-card" id="overtimeCard">
+              <label class="checkbox-label-full">
+                <input type="checkbox" id="is_overtime" name="is_overtime" value="on"
+                  <%= (typeof old !== 'undefined' && old.is_overtime === 'on') ? 'checked' : '' %>>
+                <span class="checkbox-custom"></span>
+                <div class="checkbox-text">
+                  <strong>🌙 Lembur</strong>
+                  <small>Tandai jika karyawan ini melakukan lembur hari ini</small>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Keterangan (tampil jika Tidak Hadir atau Setengah Hari) -->
           <div class="form-group form-full" id="descriptionGroup" style="display:none;">
             <label for="description">
-              Keterangan <span class="required" id="descRequired">*</span>
-              <span class="form-hint">(Wajib diisi untuk status Izin)</span>
+              Keterangan
+              <span class="form-hint">(Opsional — alasan tidak hadir / setengah hari)</span>
             </label>
             <textarea id="description" name="description" class="form-control" rows="3"
-              placeholder="Tuliskan alasan izin (misal: Sakit, Urusan Keluarga, dll)"><%= typeof old !== 'undefined' && old.description ? old.description : '' %></textarea>
+              placeholder="Contoh: Sakit, Urusan keluarga, dll"><%= typeof old !== 'undefined' && old.description ? old.description : '' %></textarea>
           </div>
         </div>
 
@@ -69,23 +98,50 @@
 </div>
 
 <script>
-  // Show/hide description based on status
   const statusSelect = document.getElementById('status');
+  const arrivalGroup = document.getElementById('arrivalGroup');
+  const arrivalInput = document.getElementById('arrival_time');
+  const arrivalRequired = document.getElementById('arrivalRequired');
+  const overtimeGroup = document.getElementById('overtimeGroup');
   const descGroup = document.getElementById('descriptionGroup');
   const descInput = document.getElementById('description');
 
-  function toggleDescription() {
-    if (statusSelect.value === 'Izin') {
-      descGroup.style.display = 'block';
-      descInput.required = true;
-    } else {
+  function toggleFields() {
+    const val = statusSelect.value;
+
+    if (val === 'Hadir') {
+      overtimeGroup.style.display = 'block';
       descGroup.style.display = 'none';
+      arrivalInput.required = true;
+      arrivalRequired.style.display = 'inline';
+      descInput.required = false;
+    } else if (val === 'Lembur') {
+      overtimeGroup.style.display = 'none';
+      descGroup.style.display = 'none';
+      arrivalInput.required = true;
+      arrivalRequired.style.display = 'inline';
+      descInput.required = false;
+    } else if (val === 'Setengah Hari') {
+      overtimeGroup.style.display = 'none';
+      descGroup.style.display = 'block';
+      arrivalInput.required = true;
+      arrivalRequired.style.display = 'inline';
+      descInput.required = false;
+    } else if (val === 'Tidak Hadir') {
+      overtimeGroup.style.display = 'none';
+      descGroup.style.display = 'block';
+      arrivalInput.required = false;
+      arrivalRequired.style.display = 'none';
+      descInput.required = false;
+    } else {
+      overtimeGroup.style.display = 'none';
+      descGroup.style.display = 'none';
+      arrivalInput.required = false;
+      arrivalRequired.style.display = 'none';
       descInput.required = false;
     }
   }
 
-  statusSelect.addEventListener('change', toggleDescription);
-  
-  // Check on load (for old values)
-  toggleDescription();
+  statusSelect.addEventListener('change', toggleFields);
+  toggleFields(); // run on load for old values
 </script>

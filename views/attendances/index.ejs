@@ -26,15 +26,10 @@
         <input type="date" name="dateTo" value="<%= filters.dateTo %>" class="form-control" title="Sampai Tanggal">
         <select name="status" class="form-control">
           <option value="">Semua Status</option>
-          <option value="Hadir" <%= filters.status === 'Hadir' ? 'selected' : '' %>>Hadir</option>
-          <option value="Izin" <%= filters.status === 'Izin' ? 'selected' : '' %>>Izin</option>
-          <option value="Alpa" <%= filters.status === 'Alpa' ? 'selected' : '' %>>Alpa</option>
-        </select>
-        <select name="department" class="form-control">
-          <option value="">Semua Departemen</option>
-          <% departments.forEach(function(d) { %>
-            <option value="<%= d %>" <%= filters.department === d ? 'selected' : '' %>><%= d %></option>
-          <% }); %>
+          <option value="Hadir"         <%= filters.status === 'Hadir' ? 'selected' : '' %>>✅ Hadir</option>
+          <option value="Tidak Hadir"   <%= filters.status === 'Tidak Hadir' ? 'selected' : '' %>>❌ Tidak Hadir</option>
+          <option value="Setengah Hari" <%= filters.status === 'Setengah Hari' ? 'selected' : '' %>>🕐 Setengah Hari</option>
+          <option value="Lembur"        <%= filters.status === 'Lembur' ? 'selected' : '' %>>🌙 Lembur</option>
         </select>
         <button type="submit" class="btn btn-primary">
           <i data-lucide="filter"></i>
@@ -55,9 +50,11 @@
           <tr>
             <th class="col-hide-mobile">No</th>
             <th>Nama Karyawan</th>
-            <th class="col-hide-mobile">Departemen</th>
+            <th class="col-hide-mobile">Jabatan</th>
             <th>Tanggal</th>
             <th>Status</th>
+            <th class="col-hide-mobile">Jam Masuk</th>
+            <th class="col-hide-mobile">Lembur</th>
             <th class="col-hide-mobile">Keterangan</th>
             <th>Aksi</th>
           </tr>
@@ -65,7 +62,7 @@
         <tbody>
           <% if (attendances.length === 0) { %>
             <tr>
-              <td colspan="7" class="text-center text-muted">
+              <td colspan="9" class="text-center text-muted">
                 <div class="empty-state">
                   <i data-lucide="clipboard"></i>
                   <p>Tidak ada data absensi ditemukan</p>
@@ -81,21 +78,45 @@
                     <div class="employee-avatar"><%= a.employee_name.charAt(0).toUpperCase() %></div>
                     <div>
                       <strong><%= a.employee_name %></strong>
-                      <small class="text-muted d-block"><%= a.employee_code %></small>
+                      <small class="text-muted d-block col-hide-desktop"><%= a.position || '' %></small>
                     </div>
                   </div>
                 </td>
-                <td class="col-hide-mobile"><span class="dept-badge"><%= a.department %></span></td>
+                <td class="col-hide-mobile"><%= a.position || '-' %></td>
                 <td>
                   <%= new Date(a.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) %>
                 </td>
                 <td>
-                  <span class="badge badge-<%= a.status === 'Hadir' ? 'success' : a.status === 'Izin' ? 'warning' : 'danger' %>">
-                    <% if (a.status === 'Hadir') { %><i data-lucide="check"></i><% } %>
-                    <% if (a.status === 'Izin') { %><i data-lucide="clock"></i><% } %>
-                    <% if (a.status === 'Alpa') { %><i data-lucide="x"></i><% } %>
-                    <%= a.status %>
-                  </span>
+                  <% if (a.status === 'Hadir') { %>
+                    <span class="badge badge-success">
+                      <i data-lucide="check"></i> Hadir
+                      <% if (a.is_overtime) { %><span class="badge-overtime">+L</span><% } %>
+                    </span>
+                  <% } else if (a.status === 'Lembur') { %>
+                    <span class="badge" style="background:#8b5cf6; color:white;">
+                      <i data-lucide="moon"></i> Lembur
+                    </span>
+                  <% } else if (a.status === 'Tidak Hadir') { %>
+                    <span class="badge badge-danger"><i data-lucide="x"></i> Tidak Hadir</span>
+                  <% } else if (a.status === 'Setengah Hari') { %>
+                    <span class="badge badge-warning"><i data-lucide="clock"></i> Setengah Hari</span>
+                  <% } else { %>
+                    <span class="badge badge-secondary"><%= a.status %></span>
+                  <% } %>
+                </td>
+                <td class="col-hide-mobile">
+                  <% if (a.arrival_time) { %>
+                    <span class="time-badge"><i data-lucide="clock-3"></i> <%= a.arrival_time %></span>
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td class="col-hide-mobile">
+                  <% if (a.is_overtime) { %>
+                    <span class="badge badge-overtime-pill">🌙 Lembur</span>
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
                 </td>
                 <td class="text-muted col-hide-mobile"><%= a.description || '-' %></td>
                 <td>

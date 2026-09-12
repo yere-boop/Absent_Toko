@@ -69,22 +69,37 @@ const Attendance = {
   },
 
   // Create new attendance
-  create({ employee_id, date, status, description }) {
+  create({ employee_id, date, status, arrival_time, is_overtime, description }) {
     const stmt = db.prepare(`
-      INSERT INTO attendances (employee_id, date, status, description)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO attendances (employee_id, date, status, arrival_time, is_overtime, description)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
-    return stmt.run(employee_id, date, status, description || '');
+    return stmt.run(
+      employee_id,
+      date,
+      status,
+      arrival_time || null,
+      is_overtime ? 1 : 0,
+      description || ''
+    );
   },
 
   // Update attendance
-  update(id, { employee_id, date, status, description }) {
+  update(id, { employee_id, date, status, arrival_time, is_overtime, description }) {
     const stmt = db.prepare(`
       UPDATE attendances 
-      SET employee_id = ?, date = ?, status = ?, description = ?, updated_at = CURRENT_TIMESTAMP
+      SET employee_id = ?, date = ?, status = ?, arrival_time = ?, is_overtime = ?, description = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
-    return stmt.run(employee_id, date, status, description || '', id);
+    return stmt.run(
+      employee_id,
+      date,
+      status,
+      arrival_time || null,
+      is_overtime ? 1 : 0,
+      description || '',
+      id
+    );
   },
 
   // Delete attendance
@@ -103,8 +118,15 @@ const Attendance = {
       GROUP BY status
     `).all(todayDate);
 
-    const result = { Hadir: 0, Izin: 0, Alpa: 0 };
+    const result = { 'Hadir': 0, 'Tidak Hadir': 0, 'Setengah Hari': 0, 'Lembur': 0 };
     stats.forEach(s => { result[s.status] = s.count; });
+
+    // Hitung lembur dari yang hadir + is_overtime atau status = 'Lembur'
+    const lemburCount = db.prepare(`
+      SELECT COUNT(*) as count FROM attendances WHERE date = ? AND (status = 'Lembur' OR (status = 'Hadir' AND is_overtime = 1))
+    `).get(todayDate);
+    result['Lembur'] = lemburCount.count;
+
     return result;
   },
 
@@ -119,7 +141,7 @@ const Attendance = {
     `).all(limit);
   },
 
-  // Get recap data for a period
+  // Get recap data for a period (monthly)
   getRecap({ month = '', year = '', department = '', employeeId = '' } = {}) {
     let query = `
       SELECT 
@@ -128,9 +150,10 @@ const Attendance = {
         e.employee_code,
         e.department,
         e.position,
-        SUM(CASE WHEN a.status = 'Hadir' THEN 1 ELSE 0 END) as hadir,
-        SUM(CASE WHEN a.status = 'Izin' THEN 1 ELSE 0 END) as izin,
-        SUM(CASE WHEN a.status = 'Alpa' THEN 1 ELSE 0 END) as alpa,
+        SUM(CASE WHEN a.status = 'Hadir' OR (a.status = 'Lembur' AND a.is_overtime = 0) THEN 1 ELSE 0 END) as hadir,
+        SUM(CASE WHEN a.status = 'Tidak Hadir' THEN 1 ELSE 0 END) as tidak_hadir,
+        SUM(CASE WHEN a.status = 'Setengah Hari' THEN 1 ELSE 0 END) as setengah_hari,
+        SUM(CASE WHEN a.status = 'Lembur' OR (a.status = 'Hadir' AND a.is_overtime = 1) THEN 1 ELSE 0 END) as lembur,
         COUNT(a.id) as total
       FROM employees e
       LEFT JOIN attendances a ON e.id = a.employee_id
@@ -139,7 +162,6 @@ const Attendance = {
     const conditions = [];
     const params = [];
 
-    // Date filtering
     if (month && year) {
       conditions.push("strftime('%m', a.date) = ? AND strftime('%Y', a.date) = ?");
       params.push(month.toString().padStart(2, '0'), year.toString());
@@ -158,7 +180,6 @@ const Attendance = {
       params.push(employeeId);
     }
 
-    // Only show active employees by default
     conditions.push("e.status = 'Aktif'");
 
     if (conditions.length > 0) {
@@ -167,6 +188,54 @@ const Attendance = {
 
     query += ' GROUP BY e.id ORDER BY e.name ASC';
     return db.prepare(query).all(...params);
+  },
+
+  // Get weekly recap (by date range)
+  getWeeklyRecap({ dateFrom, dateTo, department = '', employeeId = '' } = {}) {
+    let query = `
+      SELECT 
+        e.id as employee_id,
+        e.name,
+        e.employee_code,
+        e.department,
+        e.position,
+        SUM(CASE WHEN a.status = 'Hadir' OR (a.status = 'Lembur' AND a.is_overtime = 0) THEN 1 ELSE 0 END) as hadir,
+        SUM(CASE WHEN a.status = 'Tidak Hadir' THEN 1 ELSE 0 END) as tidak_hadir,
+        SUM(CASE WHEN a.status = 'Setengah Hari' THEN 1 ELSE 0 END) as setengah_hari,
+        SUM(CASE WHEN a.status = 'Lembur' OR (a.status = 'Hadir' AND a.is_overtime = 1) THEN 1 ELSE 0 END) as lembur,
+        COUNT(a.id) as total
+      FROM employees e
+      LEFT JOIN attendances a ON e.id = a.employee_id
+        AND a.date >= ? AND a.date <= ?
+    `;
+
+    const params = [dateFrom, dateTo];
+    const conditions = ["e.status = 'Aktif'"];
+
+    if (department) {
+      conditions.push('e.department = ?');
+      params.push(department);
+    }
+
+    if (employeeId) {
+      conditions.push('e.id = ?');
+      params.push(employeeId);
+    }
+
+    query += ' WHERE ' + conditions.join(' AND ');
+    query += ' GROUP BY e.id ORDER BY e.name ASC';
+    return db.prepare(query).all(...params);
+  },
+
+  // Get daily detail for weekly recap (each day per employee)
+  getWeeklyDetail({ dateFrom, dateTo } = {}) {
+    return db.prepare(`
+      SELECT a.*, e.name as employee_name, e.position, e.department
+      FROM attendances a
+      JOIN employees e ON a.employee_id = e.id
+      WHERE a.date >= ? AND a.date <= ?
+      ORDER BY e.name ASC, a.date ASC
+    `).all(dateFrom, dateTo);
   }
 };
 

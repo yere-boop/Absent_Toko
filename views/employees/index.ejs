@@ -19,23 +19,12 @@
       <div class="filter-group">
         <div class="search-box" style="flex:2; min-width:220px;">
           <i data-lucide="search"></i>
-          <input type="text" name="search" placeholder="Cari nama atau NIK..." value="<%= filters.search %>" class="form-control">
+          <input type="text" name="search" placeholder="Cari nama atau jabatan..." value="<%= filters.search %>" class="form-control">
         </div>
-        <select name="department" class="form-control" style="flex:1; min-width:150px;">
-          <option value="">Semua Departemen</option>
-          <% departments.forEach(function(d) { %>
-            <option value="<%= d %>" <%= filters.department === d ? 'selected' : '' %>><%= d %></option>
-          <% }); %>
-        </select>
-        <select name="status" class="form-control" style="flex:1; min-width:140px;">
-          <option value="">Semua Status</option>
-          <option value="Aktif" <%= filters.status === 'Aktif' ? 'selected' : '' %>>Aktif</option>
-          <option value="Tidak Aktif" <%= filters.status === 'Tidak Aktif' ? 'selected' : '' %>>Tidak Aktif</option>
-        </select>
         <div style="display:flex; gap:0.5rem; flex-shrink:0;">
           <button type="submit" class="btn btn-primary">
             <i data-lucide="filter"></i>
-            Filter
+            Cari
           </button>
           <a href="/employees" class="btn btn-secondary">
             <i data-lucide="refresh-cw"></i>
@@ -52,19 +41,15 @@
         <thead>
           <tr>
             <th class="col-hide-mobile">No</th>
-            <th class="col-hide-mobile">NIK</th>
-            <th>Nama Lengkap</th>
-            <th class="col-hide-mobile">Jabatan</th>
-            <th>Departemen</th>
-            <th class="col-hide-mobile">Telepon</th>
-            <th>Status</th>
+            <th>Nama</th>
+            <th>Jabatan</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           <% if (employees.length === 0) { %>
             <tr>
-              <td colspan="8" class="text-center text-muted">
+              <td colspan="4" class="text-center text-muted">
                 <div class="empty-state">
                   <i data-lucide="users"></i>
                   <p>Tidak ada data karyawan ditemukan</p>
@@ -75,29 +60,17 @@
             <% employees.forEach(function(emp, i) { %>
               <tr>
                 <td class="col-hide-mobile"><%= i + 1 %></td>
-                <td class="col-hide-mobile"><code class="code-text"><%= emp.employee_code %></code></td>
                 <td>
                   <div class="employee-name-cell">
                     <div class="employee-avatar"><%= emp.name.charAt(0).toUpperCase() %></div>
                     <div>
                       <strong><%= emp.name %></strong>
-                      <small class="text-muted d-block col-hide-desktop"><%= emp.employee_code %></small>
                     </div>
                   </div>
                 </td>
-                <td class="col-hide-mobile"><%= emp.position %></td>
-                <td><span class="dept-badge"><%= emp.department %></span></td>
-                <td class="col-hide-mobile"><%= emp.phone || '-' %></td>
-                <td>
-                  <span class="badge <%= emp.status === 'Aktif' ? 'badge-success' : 'badge-secondary' %>">
-                    <%= emp.status %>
-                  </span>
-                </td>
+                <td><%= emp.position || '-' %></td>
                 <td>
                   <div class="action-buttons">
-                    <a href="/employees/<%= emp.id %>" class="btn btn-xs btn-info" title="Detail">
-                      <i data-lucide="eye"></i>
-                    </a>
                     <a href="/employees/<%= emp.id %>/edit" class="btn btn-xs btn-warning" title="Edit">
                       <i data-lucide="edit-2"></i>
                     </a>

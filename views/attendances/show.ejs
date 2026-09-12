@@ -23,45 +23,38 @@
         <i data-lucide="clipboard-list"></i>
         Detail Absensi
       </h2>
-      <span class="badge badge-<%= attendance.status === 'Hadir' ? 'success' : attendance.status === 'Izin' ? 'warning' : 'danger' %> badge-lg">
-        <%= attendance.status %>
-      </span>
+      <% if (attendance.status === 'Hadir') { %>
+        <span class="badge badge-success badge-lg">
+          ✅ Hadir<% if (attendance.is_overtime) { %> + 🌙 Lembur<% } %>
+        </span>
+      <% } else if (attendance.status === 'Lembur') { %>
+        <span class="badge badge-lg" style="background:#8b5cf6; color:white;">🌙 Lembur</span>
+      <% } else if (attendance.status === 'Tidak Hadir') { %>
+        <span class="badge badge-danger badge-lg">❌ Tidak Hadir</span>
+      <% } else if (attendance.status === 'Setengah Hari') { %>
+        <span class="badge badge-warning badge-lg">🕐 Setengah Hari</span>
+      <% } else { %>
+        <span class="badge badge-secondary badge-lg"><%= attendance.status %></span>
+      <% } %>
     </div>
     <div class="card-body">
       <div class="detail-grid-simple">
         <div class="detail-row">
-          <div class="detail-label">
-            <i data-lucide="user"></i>
-            Nama Karyawan
-          </div>
+          <div class="detail-label"><i data-lucide="user"></i> Nama Karyawan</div>
           <div class="detail-value"><strong><%= attendance.employee_name %></strong></div>
         </div>
         <div class="detail-row">
-          <div class="detail-label">
-            <i data-lucide="hash"></i>
-            NIK / Kode Karyawan
-          </div>
-          <div class="detail-value"><code class="code-text"><%= attendance.employee_code %></code></div>
+          <div class="detail-label"><i data-lucide="briefcase"></i> Jabatan</div>
+          <div class="detail-value"><%= attendance.position || '-' %></div>
         </div>
+        <% if (attendance.department) { %>
         <div class="detail-row">
-          <div class="detail-label">
-            <i data-lucide="briefcase"></i>
-            Jabatan
-          </div>
-          <div class="detail-value"><%= attendance.position %></div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">
-            <i data-lucide="building"></i>
-            Departemen
-          </div>
+          <div class="detail-label"><i data-lucide="building"></i> Departemen</div>
           <div class="detail-value"><span class="dept-badge"><%= attendance.department %></span></div>
         </div>
+        <% } %>
         <div class="detail-row">
-          <div class="detail-label">
-            <i data-lucide="calendar"></i>
-            Tanggal Absensi
-          </div>
+          <div class="detail-label"><i data-lucide="calendar"></i> Tanggal</div>
           <div class="detail-value">
             <strong>
               <%= new Date(attendance.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %>
@@ -69,30 +62,45 @@
           </div>
         </div>
         <div class="detail-row">
-          <div class="detail-label">
-            <i data-lucide="activity"></i>
-            Status
-          </div>
+          <div class="detail-label"><i data-lucide="activity"></i> Status</div>
           <div class="detail-value">
-            <span class="badge badge-<%= attendance.status === 'Hadir' ? 'success' : attendance.status === 'Izin' ? 'warning' : 'danger' %> badge-lg">
-              <%= attendance.status %>
-            </span>
+            <% if (attendance.status === 'Hadir') { %>
+              <span class="badge badge-success badge-lg">✅ Hadir</span>
+            <% } else if (attendance.status === 'Lembur') { %>
+              <span class="badge badge-lg" style="background:#8b5cf6; color:white;">🌙 Lembur</span>
+            <% } else if (attendance.status === 'Tidak Hadir') { %>
+              <span class="badge badge-danger badge-lg">❌ Tidak Hadir</span>
+            <% } else if (attendance.status === 'Setengah Hari') { %>
+              <span class="badge badge-warning badge-lg">🕐 Setengah Hari</span>
+            <% } %>
+          </div>
+        </div>
+        <% if (attendance.arrival_time) { %>
+        <div class="detail-row">
+          <div class="detail-label"><i data-lucide="clock-3"></i> Jam Kedatangan</div>
+          <div class="detail-value">
+            <span class="time-badge"><i data-lucide="clock-3"></i> <%= attendance.arrival_time %></span>
+          </div>
+        </div>
+        <% } %>
+        <div class="detail-row">
+          <div class="detail-label"><i data-lucide="moon"></i> Lembur</div>
+          <div class="detail-value">
+            <% if (attendance.is_overtime) { %>
+              <span class="badge badge-overtime-pill">🌙 Ya, Lembur</span>
+            <% } else { %>
+              <span class="text-muted">Tidak</span>
+            <% } %>
           </div>
         </div>
         <% if (attendance.description) { %>
-          <div class="detail-row">
-            <div class="detail-label">
-              <i data-lucide="message-square"></i>
-              Keterangan
-            </div>
-            <div class="detail-value"><%= attendance.description %></div>
-          </div>
+        <div class="detail-row">
+          <div class="detail-label"><i data-lucide="message-square"></i> Keterangan</div>
+          <div class="detail-value"><%= attendance.description %></div>
+        </div>
         <% } %>
         <div class="detail-row">
-          <div class="detail-label">
-            <i data-lucide="clock"></i>
-            Dicatat Pada
-          </div>
+          <div class="detail-label"><i data-lucide="clock"></i> Dicatat Pada</div>
           <div class="detail-value text-muted">
             <%= new Date(attendance.created_at).toLocaleString('id-ID') %>
           </div>

@@ -16,66 +16,20 @@
     <div class="card-body">
       <form action="/employees" method="POST" id="employeeForm" novalidate>
         <div class="form-grid">
-          <div class="form-group">
-            <label for="employee_code">Nomor Karyawan (NIK) <span class="required">*</span></label>
-            <input type="text" id="employee_code" name="employee_code" class="form-control"
-              placeholder="Contoh: KRY-001"
-              value="<%= typeof old !== 'undefined' && old.employee_code ? old.employee_code : '' %>"
-              required>
-            <span class="form-hint">Nomor unik untuk setiap karyawan</span>
-          </div>
-
-          <div class="form-group">
-            <label for="name">Nama Lengkap <span class="required">*</span></label>
+          <div class="form-group form-full">
+            <label for="name">Nama <span class="required">*</span></label>
             <input type="text" id="name" name="name" class="form-control"
-              placeholder="Masukkan nama lengkap"
+              placeholder="Masukkan nama lengkap karyawan"
               value="<%= typeof old !== 'undefined' && old.name ? old.name : '' %>"
               required>
           </div>
 
-          <div class="form-group">
+          <div class="form-group form-full">
             <label for="position">Jabatan <span class="required">*</span></label>
             <input type="text" id="position" name="position" class="form-control"
-              placeholder="Contoh: Staff IT, Manager"
+              placeholder="Contoh: Staff, Supervisor, Manager"
               value="<%= typeof old !== 'undefined' && old.position ? old.position : '' %>"
               required>
-          </div>
-
-          <div class="form-group">
-            <label for="department">Departemen <span class="required">*</span></label>
-            <input type="text" id="department" name="department" class="form-control"
-              placeholder="Contoh: IT, Keuangan, HRD"
-              value="<%= typeof old !== 'undefined' && old.department ? old.department : '' %>"
-              list="departmentList"
-              required>
-            <datalist id="departmentList">
-              <% if (typeof departments !== 'undefined') { %>
-                <% departments.forEach(function(d) { %>
-                  <option value="<%= d %>">
-                <% }); %>
-              <% } %>
-            </datalist>
-          </div>
-
-          <div class="form-group">
-            <label for="phone">Nomor Telepon</label>
-            <input type="tel" id="phone" name="phone" class="form-control"
-              placeholder="Contoh: 081234567890"
-              value="<%= typeof old !== 'undefined' && old.phone ? old.phone : '' %>">
-          </div>
-
-          <div class="form-group">
-            <label for="status">Status Karyawan <span class="required">*</span></label>
-            <select id="status" name="status" class="form-control" required>
-              <option value="Aktif" <%= (typeof old === 'undefined' || !old.status || old.status === 'Aktif') ? 'selected' : '' %>>Aktif</option>
-              <option value="Tidak Aktif" <%= (typeof old !== 'undefined' && old.status === 'Tidak Aktif') ? 'selected' : '' %>>Tidak Aktif</option>
-            </select>
-          </div>
-
-          <div class="form-group form-full">
-            <label for="address">Alamat</label>
-            <textarea id="address" name="address" class="form-control" rows="3"
-              placeholder="Masukkan alamat lengkap"><%= typeof old !== 'undefined' && old.address ? old.address : '' %></textarea>
           </div>
         </div>
 

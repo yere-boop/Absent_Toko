@@ -21,31 +21,22 @@ router.get('/', (req, res) => {
 
 // GET /employees/create - Show create form
 router.get('/create', (req, res) => {
-  const departments = Employee.getDepartments();
   res.render('employees/create', {
     title: 'Tambah Karyawan',
     active: 'employees',
-    departments,
     error: req.flash('error'),
     old: req.flash('old')[0] || {}
   });
 });
 
-// POST /employees - Create new employee
+// POST /employees - Create new employee (only name + position required)
 router.post('/', (req, res) => {
-  const { employee_code, name, position, department, phone, address, status } = req.body;
+  const { name, position } = req.body;
 
-  // Validation
+  // Validation — only name & position required
   const errors = [];
-  if (!employee_code || !employee_code.trim()) errors.push('Nomor karyawan wajib diisi.');
-  if (!name || !name.trim()) errors.push('Nama lengkap wajib diisi.');
+  if (!name || !name.trim()) errors.push('Nama wajib diisi.');
   if (!position || !position.trim()) errors.push('Jabatan wajib diisi.');
-  if (!department || !department.trim()) errors.push('Departemen wajib diisi.');
-
-  // Check unique employee code
-  if (employee_code && Employee.findByCode(employee_code.trim())) {
-    errors.push('Nomor karyawan sudah digunakan.');
-  }
 
   if (errors.length > 0) {
     req.flash('error', errors);
@@ -55,13 +46,8 @@ router.post('/', (req, res) => {
 
   try {
     Employee.create({
-      employee_code: employee_code.trim(),
       name: name.trim(),
       position: position.trim(),
-      department: department.trim(),
-      phone: phone ? phone.trim() : '',
-      address: address ? address.trim() : '',
-      status: status || 'Aktif'
     });
 
     req.flash('success', 'Karyawan berhasil ditambahkan.');
@@ -81,7 +67,6 @@ router.get('/:id', (req, res) => {
     return res.redirect('/employees');
   }
 
-  // Get attendance history for this employee
   const Attendance = require('../models/Attendance');
   const attendances = Attendance.findAll({ search: '', status: '', department: '', dateFrom: '', dateTo: '' });
   const employeeAttendances = attendances.filter(a => a.employee_id === employee.id);
@@ -102,20 +87,17 @@ router.get('/:id/edit', (req, res) => {
     return res.redirect('/employees');
   }
 
-  const departments = Employee.getDepartments();
-
   res.render('employees/edit', {
     title: 'Edit Karyawan',
     active: 'employees',
     employee,
-    departments,
     error: req.flash('error')
   });
 });
 
-// PUT /employees/:id - Update employee
+// PUT /employees/:id - Update employee (only name + position required)
 router.put('/:id', (req, res) => {
-  const { employee_code, name, position, department, phone, address, status } = req.body;
+  const { name, position } = req.body;
   const id = req.params.id;
 
   const employee = Employee.findById(id);
@@ -124,18 +106,9 @@ router.put('/:id', (req, res) => {
     return res.redirect('/employees');
   }
 
-  // Validation
   const errors = [];
-  if (!employee_code || !employee_code.trim()) errors.push('Nomor karyawan wajib diisi.');
-  if (!name || !name.trim()) errors.push('Nama lengkap wajib diisi.');
+  if (!name || !name.trim()) errors.push('Nama wajib diisi.');
   if (!position || !position.trim()) errors.push('Jabatan wajib diisi.');
-  if (!department || !department.trim()) errors.push('Departemen wajib diisi.');
-
-  // Check unique employee code (exclude current)
-  const existing = Employee.findByCode(employee_code.trim());
-  if (existing && existing.id !== parseInt(id)) {
-    errors.push('Nomor karyawan sudah digunakan.');
-  }
 
   if (errors.length > 0) {
     req.flash('error', errors);
@@ -144,13 +117,13 @@ router.put('/:id', (req, res) => {
 
   try {
     Employee.update(id, {
-      employee_code: employee_code.trim(),
       name: name.trim(),
       position: position.trim(),
-      department: department.trim(),
-      phone: phone ? phone.trim() : '',
-      address: address ? address.trim() : '',
-      status: status || 'Aktif'
+      employee_code: employee.employee_code,
+      department: employee.department || '',
+      phone: employee.phone || '',
+      address: employee.address || '',
+      status: employee.status || 'Aktif'
     });
 
     req.flash('success', 'Data karyawan berhasil diperbarui.');

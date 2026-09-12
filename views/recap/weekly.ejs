@@ -1,0 +1,206 @@
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <i data-lucide="calendar-range"></i>
+      Rekap Absensi Mingguan
+    </h2>
+    <div style="display:flex; gap:0.5rem; align-items:center;">
+      <a href="/recap" class="btn btn-secondary btn-sm">
+        <i data-lucide="bar-chart-3"></i>
+        Rekap Bulanan
+      </a>
+      <a href="/recap/weekly/pdf?weekStart=<%= selectedStart %><%= filters.department ? '&department=' + encodeURIComponent(filters.department) : '' %>"
+         class="btn btn-primary btn-sm" id="downloadPdfBtn" target="_blank">
+        <i data-lucide="file-down"></i>
+        Download PDF
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <form action="/recap/weekly" method="GET" class="filter-form" id="weeklyForm">
+      <div class="filter-group filter-group-wrap">
+        <div class="filter-item">
+          <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:4px;">Mulai Minggu</label>
+          <input type="date" name="weekStart" id="weekStartInput" class="form-control"
+            value="<%= selectedStart %>"
+            title="Pilih tanggal Senin awal minggu">
+        </div>
+        <% if (departments.length > 0) { %>
+        <select name="department" class="form-control">
+          <option value="">Semua</option>
+          <% departments.forEach(function(d) { %>
+            <option value="<%= d %>" <%= filters.department === d ? 'selected' : '' %>><%= d %></option>
+          <% }); %>
+        </select>
+        <% } %>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="filter"></i>
+          Tampilkan
+        </button>
+        <a href="/recap/weekly" class="btn btn-secondary">
+          <i data-lucide="refresh-cw"></i>
+          Reset
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Periode info -->
+  <div style="padding: 0 1.5rem 0.75rem; font-size:0.875rem; color:var(--text-secondary);">
+    <i data-lucide="calendar" style="width:14px; height:14px; vertical-align:middle;"></i>
+    Periode: <strong>
+      <%= new Date(selectedStart + 'T00:00:00').toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) %>
+    </strong>
+    s/d
+    <strong>
+      <%= new Date(selectedEnd + 'T00:00:00').toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) %>
+    </strong>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="recap-summary">
+    <div class="recap-stat recap-hadir">
+      <i data-lucide="user-check"></i>
+      <div>
+        <span class="recap-stat-value"><%= totals.hadir %></span>
+        <span class="recap-stat-label">Hadir</span>
+      </div>
+    </div>
+    <div class="recap-stat recap-alpa">
+      <i data-lucide="user-x"></i>
+      <div>
+        <span class="recap-stat-value"><%= totals.tidak_hadir %></span>
+        <span class="recap-stat-label">Tidak Hadir</span>
+      </div>
+    </div>
+    <div class="recap-stat recap-izin">
+      <i data-lucide="user-minus"></i>
+      <div>
+        <span class="recap-stat-value"><%= totals.setengah_hari %></span>
+        <span class="recap-stat-label">Setengah Hari</span>
+      </div>
+    </div>
+    <div class="recap-stat" style="border-left-color:#8b5cf6;">
+      <i data-lucide="moon" style="color:#8b5cf6;"></i>
+      <div>
+        <span class="recap-stat-value" style="color:#8b5cf6;"><%= totals.lembur %></span>
+        <span class="recap-stat-label">Lembur</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table weekly-table">
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th class="col-hide-mobile">Jabatan</th>
+            <% const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min']; %>
+            <% dateRange.forEach(function(d, i) { %>
+              <th class="text-center day-col">
+                <div><%= dayNames[i] %></div>
+                <div class="day-date"><%= new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { day:'numeric', month:'short' }) %></div>
+              </th>
+            <% }); %>
+            <th class="text-center sum-col"><span class="badge badge-success">H</span></th>
+            <th class="text-center sum-col"><span class="badge badge-danger">TH</span></th>
+            <th class="text-center sum-col"><span class="badge badge-warning">SH</span></th>
+            <th class="text-center sum-col"><span class="badge" style="background:#8b5cf6;color:#fff;">L</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (recap.length === 0) { %>
+            <tr>
+              <td colspan="<%= 4 + dateRange.length + 2 %>" class="text-center text-muted">
+                <div class="empty-state">
+                  <i data-lucide="calendar-x"></i>
+                  <p>Tidak ada data untuk minggu ini</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% recap.forEach(function(emp) { %>
+              <tr>
+                <td>
+                  <div class="employee-name-cell">
+                    <div class="employee-avatar"><%= emp.name.charAt(0).toUpperCase() %></div>
+                    <strong><%= emp.name %></strong>
+                  </div>
+                </td>
+                <td class="col-hide-mobile"><%= emp.position || '-' %></td>
+                <% dateRange.forEach(function(d) { %>
+                  <% const att = detailMap[emp.employee_id + '_' + d]; %>
+                  <td class="text-center day-cell">
+                    <% if (!att) { %>
+                      <span class="day-dot day-empty">-</span>
+                    <% } else if (att.status === 'Hadir') { %>
+                      <span class="day-dot day-hadir" title="Hadir <%= att.arrival_time ? '- ' + att.arrival_time : '' %><%= att.is_overtime ? ' (Lembur)' : '' %>">
+                        <% if (att.is_overtime) { %>🌙<% } else { %>✅<% } %>
+                      </span>
+                    <% } else if (att.status === 'Lembur') { %>
+                      <span class="day-dot" title="Lembur <%= att.arrival_time ? '- ' + att.arrival_time : '' %>">🌙</span>
+                    <% } else if (att.status === 'Tidak Hadir') { %>
+                      <span class="day-dot day-absen" title="Tidak Hadir<%= att.description ? ': ' + att.description : '' %>">❌</span>
+                    <% } else if (att.status === 'Setengah Hari') { %>
+                      <span class="day-dot day-setengah" title="Setengah Hari">🕐</span>
+                    <% } %>
+                  </td>
+                <% }); %>
+                <td class="text-center"><strong class="text-success"><%= emp.hadir %></strong></td>
+                <td class="text-center"><strong class="text-danger"><%= emp.tidak_hadir %></strong></td>
+                <td class="text-center"><strong class="text-warning"><%= emp.setengah_hari %></strong></td>
+                <td class="text-center"><strong style="color:#8b5cf6;"><%= emp.lembur %></strong></td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+        <% if (recap.length > 0) { %>
+          <tfoot>
+            <tr class="table-footer">
+              <td colspan="2"><strong>TOTAL</strong></td>
+              <% dateRange.forEach(function() { %><td></td><% }); %>
+              <td class="text-center"><strong class="text-success"><%= totals.hadir %></strong></td>
+              <td class="text-center"><strong class="text-danger"><%= totals.tidak_hadir %></strong></td>
+              <td class="text-center"><strong class="text-warning"><%= totals.setengah_hari %></strong></td>
+              <td class="text-center"><strong style="color:#8b5cf6;"><%= totals.lembur %></strong></td>
+            </tr>
+          </tfoot>
+        <% } %>
+      </table>
+    </div>
+
+    <!-- Keterangan -->
+    <div class="legend-bar">
+      <span>✅ Hadir</span>
+      <span>🌙 Lembur (Hadir + Lembur)</span>
+      <span>❌ Tidak Hadir</span>
+      <span>🕐 Setengah Hari</span>
+      <span class="text-muted">- = Belum ada data</span>
+      <span class="legend-sep">|</span>
+      <span><strong>H</strong> = Hadir · <strong>TH</strong> = Tidak Hadir · <strong>SH</strong> = Setengah Hari · <strong>L</strong> = Lembur</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Update PDF link whenever week changes
+  document.getElementById('weeklyForm').addEventListener('submit', function() {
+    // allow normal submit
+  });
+
+  // Auto-select Monday when user picks any date
+  const weekStartInput = document.getElementById('weekStartInput');
+  if (weekStartInput) {
+    weekStartInput.addEventListener('change', function() {
+      const d = new Date(this.value + 'T00:00:00');
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      d.setDate(diff);
+      const monday = d.toISOString().split('T')[0];
+      this.value = monday;
+    });
+  }
+</script>

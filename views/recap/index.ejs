@@ -2,8 +2,12 @@
   <div class="card-header">
     <h2 class="card-title">
       <i data-lucide="bar-chart-3"></i>
-      Rekap Absensi Karyawan
+      Rekap Absensi Bulanan
     </h2>
+    <a href="/recap/weekly" class="btn btn-primary btn-sm">
+      <i data-lucide="calendar-range"></i>
+      Rekap Mingguan
+    </a>
   </div>
 
   <!-- Filter Bar -->
@@ -18,20 +22,6 @@
         <select name="year" class="form-control">
           <% years.forEach(function(y) { %>
             <option value="<%= y %>" <%= filters.year == y ? 'selected' : '' %>><%= y %></option>
-          <% }); %>
-        </select>
-        <select name="department" class="form-control">
-          <option value="">Semua Departemen</option>
-          <% departments.forEach(function(d) { %>
-            <option value="<%= d %>" <%= filters.department === d ? 'selected' : '' %>><%= d %></option>
-          <% }); %>
-        </select>
-        <select name="employee_id" class="form-control">
-          <option value="">Semua Karyawan</option>
-          <% employees.forEach(function(emp) { %>
-            <option value="<%= emp.id %>" <%= filters.employee_id == emp.id ? 'selected' : '' %>>
-              <%= emp.name %>
-            </option>
           <% }); %>
         </select>
         <button type="submit" class="btn btn-primary">
@@ -55,25 +45,25 @@
         <span class="recap-stat-label">Total Hadir</span>
       </div>
     </div>
-    <div class="recap-stat recap-izin">
-      <i data-lucide="user-minus"></i>
-      <div>
-        <span class="recap-stat-value"><%= totals.izin %></span>
-        <span class="recap-stat-label">Total Izin</span>
-      </div>
-    </div>
     <div class="recap-stat recap-alpa">
       <i data-lucide="user-x"></i>
       <div>
-        <span class="recap-stat-value"><%= totals.alpa %></span>
-        <span class="recap-stat-label">Total Alpa</span>
+        <span class="recap-stat-value"><%= totals.tidak_hadir %></span>
+        <span class="recap-stat-label">Tidak Hadir</span>
       </div>
     </div>
-    <div class="recap-stat recap-total">
-      <i data-lucide="calendar-range"></i>
+    <div class="recap-stat recap-izin">
+      <i data-lucide="user-minus"></i>
       <div>
-        <span class="recap-stat-value"><%= totals.total %></span>
-        <span class="recap-stat-label">Total Keseluruhan</span>
+        <span class="recap-stat-value"><%= totals.setengah_hari %></span>
+        <span class="recap-stat-label">Setengah Hari</span>
+      </div>
+    </div>
+    <div class="recap-stat" style="border-left-color: #8b5cf6;">
+      <i data-lucide="moon" style="color:#8b5cf6;"></i>
+      <div>
+        <span class="recap-stat-value" style="color:#8b5cf6;"><%= totals.lembur %></span>
+        <span class="recap-stat-label">Lembur</span>
       </div>
     </div>
   </div>
@@ -85,17 +75,11 @@
           <tr>
             <th class="col-hide-mobile">No</th>
             <th>Nama Karyawan</th>
-            <th class="col-hide-mobile">NIK</th>
-            <th class="col-hide-mobile">Departemen</th>
-            <th class="text-center">
-              <span class="badge badge-success">Hadir</span>
-            </th>
-            <th class="text-center">
-              <span class="badge badge-warning">Izin</span>
-            </th>
-            <th class="text-center">
-              <span class="badge badge-danger">Alpa</span>
-            </th>
+            <th class="col-hide-mobile">Jabatan</th>
+            <th class="text-center"><span class="badge badge-success">Hadir</span></th>
+            <th class="text-center"><span class="badge badge-danger">Tidak Hadir</span></th>
+            <th class="text-center"><span class="badge badge-warning">½ Hari</span></th>
+            <th class="text-center"><span class="badge" style="background:#8b5cf6; color:#fff;">Lembur</span></th>
             <th class="text-center">Total</th>
             <th class="text-center">Kehadiran</th>
           </tr>
@@ -112,32 +96,21 @@
             </tr>
           <% } else { %>
             <% recap.forEach(function(r, i) { %>
-              <% const pct = r.total > 0 ? Math.round((r.hadir / r.total) * 100) : 0; %>
+              <% const pct = r.total > 0 ? Math.round(((r.hadir + r.setengah_hari * 0.5) / r.total) * 100) : 0; %>
               <tr>
                 <td class="col-hide-mobile"><%= i + 1 %></td>
                 <td>
                   <div class="employee-name-cell">
                     <div class="employee-avatar"><%= r.name.charAt(0).toUpperCase() %></div>
-                    <div>
-                      <strong><%= r.name %></strong>
-                      <small class="text-muted d-block col-hide-desktop"><%= r.department %></small>
-                    </div>
+                    <strong><%= r.name %></strong>
                   </div>
                 </td>
-                <td class="col-hide-mobile"><code class="code-text"><%= r.employee_code %></code></td>
-                <td class="col-hide-mobile"><span class="dept-badge"><%= r.department %></span></td>
-                <td class="text-center">
-                  <strong class="text-success"><%= r.hadir %></strong>
-                </td>
-                <td class="text-center">
-                  <strong class="text-warning"><%= r.izin %></strong>
-                </td>
-                <td class="text-center">
-                  <strong class="text-danger"><%= r.alpa %></strong>
-                </td>
-                <td class="text-center">
-                  <strong><%= r.total %></strong>
-                </td>
+                <td class="col-hide-mobile"><%= r.position || '-' %></td>
+                <td class="text-center"><strong class="text-success"><%= r.hadir %></strong></td>
+                <td class="text-center"><strong class="text-danger"><%= r.tidak_hadir %></strong></td>
+                <td class="text-center"><strong class="text-warning"><%= r.setengah_hari %></strong></td>
+                <td class="text-center"><strong style="color:#8b5cf6;"><%= r.lembur %></strong></td>
+                <td class="text-center"><strong><%= r.total %></strong></td>
                 <td class="text-center">
                   <div class="progress-cell">
                     <div class="progress-bar-wrap">
@@ -156,13 +129,14 @@
         <% if (recap.length > 0) { %>
           <tfoot>
             <tr class="table-footer">
-              <td colspan="4"><strong>TOTAL</strong></td>
+              <td colspan="3"><strong>TOTAL</strong></td>
               <td class="text-center"><strong class="text-success"><%= totals.hadir %></strong></td>
-              <td class="text-center"><strong class="text-warning"><%= totals.izin %></strong></td>
-              <td class="text-center"><strong class="text-danger"><%= totals.alpa %></strong></td>
+              <td class="text-center"><strong class="text-danger"><%= totals.tidak_hadir %></strong></td>
+              <td class="text-center"><strong class="text-warning"><%= totals.setengah_hari %></strong></td>
+              <td class="text-center"><strong style="color:#8b5cf6;"><%= totals.lembur %></strong></td>
               <td class="text-center"><strong><%= totals.total %></strong></td>
               <td class="text-center">
-                <% const overallPct = totals.total > 0 ? Math.round((totals.hadir / totals.total) * 100) : 0; %>
+                <% const overallPct = totals.total > 0 ? Math.round(((totals.hadir + totals.setengah_hari * 0.5) / totals.total) * 100) : 0; %>
                 <strong><%= overallPct %>%</strong>
               </td>
             </tr>

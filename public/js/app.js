@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   SISTEM ABSENSI KARYAWAN — Client-side JavaScript
+   TOKO MASARANG — Client-side JavaScript
    ═══════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Handled by browser natively
   });
 
-  console.log('✅ AbsensiPro initialized successfully');
+  console.log('✅ Toko Masarang initialized successfully');
 });
 
 // ─── CSS error state ──────────────────────────────────────
